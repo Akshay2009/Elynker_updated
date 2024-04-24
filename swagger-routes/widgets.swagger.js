@@ -1,15 +1,45 @@
 /**
  * @swagger
+ * tags:
+ *   name: Widgets
+ *   description: API endpoints for managing widgets
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *   schemas:
+ *     Widget:
+ *       type: object
+ *       properties:
+ *         widget_name:
+ *           type: string
+ *         page_name:
+ *           type: string
+ *         is_active:
+ *           type: boolean
+ *         rank:
+ *           type: number
+ *         updated_by:
+ *           type: number
+ *       required:
+ *         - widget_name
+ *         - updated_by
+ */
+/**
+ * @swagger
  * /api/widgets:
  *   post:
- *     summary: Create a new widget
+ *     summary: Create widgets
  *     tags: [Widgets]
  *     parameters:
- *       - in: header
- *         name: x-access-token
- *         description: Access token for authentication
- *         required: true
- *         type: string
+ *         - name: x-access-token
+ *           in: header
+ *           description: Access token for authentication
+ *           required: true
+ *           schema:
+ *             type: string
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -17,32 +47,58 @@
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Widget'
+ *             type: array
+ *             items:
+ *               $ref: '#/components/schemas/Widget'
  *     responses:
- *       201:
- *         description: Widget created successfully
+ *       '201':
+ *         description: Widgets created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Widget'
- *       400:
- *         description: Bad request
- *       500:
- *         description: Internal server error
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Widget'
+ *       '400':
+ *           description: Bad request
+ *       '401':
+ *           description: Unauthorized - Access token is missing or invalid
+ *       '500':
+ *           description: Internal Server Error
+ */
+/**
+ * @swagger
+ * /api/widgets:
  *   get:
  *     summary: Get all widgets
  *     tags: [Widgets]
- *     parameters:
- *       - in: header
- *         name: x-access-token
- *         description: Access token for authentication
- *         required: true
- *         type: string
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *         - name: x-access-token
+ *           in: header
+ *           description: Access token for authentication
+ *           required: true
+ *           schema:
+ *             type: string
+ *         - name: page
+ *           in: query
+ *           description: Page for Pagination
+ *           schema:
+ *             type: integer
+ *         - name: pageSize
+ *           in: query
+ *           description: Page Size to show records on the Page for Pagination
+ *           schema:
+ *             type: integer
  *     responses:
- *       200:
- *         description: Success
+ *       '200':
+ *         description: Widgets retrieved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -56,28 +112,34 @@
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Widget'
- *       404:
- *         description: Not found
- *       500:
- *         description: Internal server error
+ *       '400':
+ *           description: Bad request
+ *       '401':
+ *           description: Unauthorized - Access token is missing or invalid
+ *       '500':
+ *           description: Internal Server Error
+ */
+/**
+ * @swagger
  * /api/widgets/{id}:
  *   put:
  *     summary: Update a widget by ID
  *     tags: [Widgets]
- *     parameters:
- *       - in: header
- *         name: x-access-token
- *         description: Access token for authentication
- *         required: true
- *         type: string
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID of the widget to update
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *         - name: x-access-token
+ *           in: header
+ *           description: Access token for authentication
+ *           required: true
+ *           schema:
+ *             type: string
+ *         - name: id
+ *           in: path
+ *           description: Id of widget
+ *           required: true
+ *           schema:
+ *             type: integer
  *     requestBody:
  *       required: true
  *       content:
@@ -85,16 +147,21 @@
  *           schema:
  *             $ref: '#/components/schemas/Widget'
  *     responses:
- *       200:
+ *       '200':
  *         description: Widget updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Widget'
- *       400:
- *         description: Bad request
- *       404:
- *         description: Not found
- *       500:
- *         description: Internal server error
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Widget'
+ *       '404':
+ *           description: No Record found
+ *       '401':
+ *           description: Unauthorized - Access token is missing or invalid
+ *       '500':
+ *           description: Internal Server Error
  */

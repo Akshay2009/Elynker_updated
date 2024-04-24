@@ -7,19 +7,28 @@ const Widgets = db.widgets;
 //*********End point to create widgets details****************/
 module.exports.saveWidgets = async function (req, res) {
   try {
-    const { widget_name, page_name, is_active, rank, updated_by } = req.body;
-    const record = await Widgets.create({
-      widget_name,
-      page_name,
-      is_active,
-      rank,
-      updated_by,
+    const arr = req.body;
+    if (!arr.length) {
+      return res.status(serviceResponse.badRequest).json({
+        error: 'Please provide your  data in json array[]!',
+      });
+    }
+    const result = await Widgets.bulkCreate(arr, {
+      updateOnDuplicate: [
+        'widget_name',
+        'page_name',
+        'is_active',
+        'rank',
+        'updated_by',
+      ],
     });
-    return res.status(serviceResponse.saveSuccess).json({
-      message: serviceResponse.createdMessage,
-      data: record,
-    });
-  } catch (err) {
+    if (result) {
+      return res.status(serviceResponse.saveSuccess).json({
+        success: serviceResponse.createdMessage,
+        data: result,
+      });
+    }
+  }catch (err) {
     logErrorToFile.logErrorToFile(err, "widgets.controller", "saveWidgets");
     if (err instanceof Sequelize.Error) {
       return res

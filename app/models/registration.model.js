@@ -206,6 +206,14 @@ module.exports = (sequelize, Sequelize) => {
     additional_detail3: {
       type: Sequelize.STRING(200),
     },
+    rating: {
+      type: Sequelize.DECIMAL(3, 2),
+      defaultValue: 0.00, 
+    },
+    rating_member_count: {
+      type: Sequelize.INTEGER,
+      defaultValue: 0,
+    },
   }, {
     indexes: [
       {

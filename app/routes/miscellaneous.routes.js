@@ -61,4 +61,16 @@ module.exports = function (app) {
       ]),
     filterVendors.cardImageUpload
   );
+
+  /**Endpoint to get vendors freelancer details By reg id
+ * @param {String} '/api/vendorDetails/freelancer/:reg_id' - API endpoint path.
+ * @param {Function[]} [authJwt.verifyToken,
+ * @param {Function}  filterVendors.getVendorFreelancerByRegId, - Controller function to get filter vendors freelancer details by Reg id
+ *
+ **/
+  app.get(
+    "/api/vendorDetails/freelancer/:reg_id",
+    //[authJwt.verifyToken],
+    filterVendors.getVendorFreelancerByRegId
+  );
 };

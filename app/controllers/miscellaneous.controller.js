@@ -93,6 +93,7 @@ module.exports.getVendorsByLocation = async (req, res) => {
                 'freelancer_role',
                 'freelancer_bio',
                 'language',
+                'rating',
             ],
             order: [
                 sortBy === 'price-low-to-high' ? [{ model: Product }, 'budget', 'ASC'] :
@@ -101,7 +102,7 @@ module.exports.getVendorsByLocation = async (req, res) => {
             ].filter(Boolean) // Filter out any null values from the array
         });
         
-        const staticRating = 3.5;
+
         const formattedData = vendors.map(vendor => {
             const productCount = vendor.products.length; // Calculate product_count based on the number of products
             const memberCount = vendor.contacted_members.length; // Calculate member_count based on the number of contacted_members
@@ -118,7 +119,7 @@ module.exports.getVendorsByLocation = async (req, res) => {
                 country_code: vendor.user.dataValues.country_code.substring(1),
                 mobile_number: vendor.user.dataValues.mobile_number,
                 product_count: productCount,
-                rating: staticRating,
+                rating: vendor.rating,
                 member_count: memberCount,
                 education: vendor.education,
                 available_hrs_per_week: vendor.available_hrs_per_week,
@@ -129,7 +130,6 @@ module.exports.getVendorsByLocation = async (req, res) => {
                 language: vendor.language,
             };
         });
-
         
         // Filter vendors based on the minimum rating
         const filteredVendors = formattedData.filter(vendor => vendor.rating >= minRating && vendor.product_count>0);
@@ -403,3 +403,82 @@ module.exports.cardImageUpload = async function (req, res) {
       .json({ error:serviceResponse.internalServerError + error.message });
   }
 };
+
+
+/*
+ * End point to get vendor freelancer Details by registration id-
+ *
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @return {Promise<void>} - Promise representing the completion of the retrieval operation.
+ */
+module.exports.getVendorFreelancerByRegId = async function(req, res) {
+    try {
+        const { reg_id } = req.params;
+        let whereCondition = {
+            id: reg_id
+        };
+        let includeOptions = [
+            {
+                model: User,
+                attributes: ['id', 'mobile_number', 'country_code']
+            },
+            {
+                model: Product,
+                include:{
+                    model: Category,
+                    attributes: ['id','title'],
+                    through: { attributes: [] },
+                }
+            },
+            {
+                model: FreelancerBannerProject,
+            },
+            {
+                model: FreelancerResume,
+            },
+            {
+                model: Certificate
+            },
+            {
+                model: MembersContacted,
+            }
+        ];
+        const vendor = await Registration.findAll({
+            where: whereCondition,
+            include: includeOptions,
+        });
+
+        if (vendor.length>0) {
+            const categories = vendor.flatMap((entry) => {
+                return entry.products.flatMap((product) => {
+                    return product.categories.map((category) => ({
+                        id: category.id,
+                        title: category.title
+                    }));
+                });
+            });
+            // Mock reviews data
+            const returnData = vendor.map((entry)=>{
+                return {
+                    ...entry.toJSON(),
+                    reviews: [{"review":"Static Review 1"},{"review":"Static Review 2"}],
+                    contacted_members: entry.contacted_members.length,
+                    categories: categories
+                }
+            });
+
+            // Send response with both vendor details and reviews
+            return res.status(serviceResponse.ok).json({ 
+                message: serviceResponse.getMessage, 
+                data: returnData[0],
+            });
+        } else {
+            return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
+        }
+    } catch (err) {
+        console.error(err); // Log the error for debugging
+        logErrorToFile.logErrorToFile(err, 'miscellaneous.controller', 'getVendorFreelancerByRegId');
+        return res.status(serviceResponse.internalServerError).json({ error: 'Internal server error' });
+    }
+}

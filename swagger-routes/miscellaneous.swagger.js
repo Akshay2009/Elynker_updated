@@ -216,6 +216,38 @@
  * 
  * /api/vendorDetails/{reg_id}:
  *   get:
+ *     summary: Get Freelancer vendor profile details by registration ID
+ *     tags: [Miscellaneous]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: reg_id
+ *         description: Registration ID of the vendor
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: header
+ *         name: x-access-token
+ *         description: Access token for authentication
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Vendor profile details fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/definitions/Vendor' # Assuming Vendor definition is reused here
+ *       '401':
+ *         description: Unauthorized
+ *       '404':
+ *         description: Vendor with the provided registration ID not found
+ *       '500':
+ *         description: Internal server error
+ * /api/vendorDetails/freelancer/{reg_id}:
+ *   get:
  *     summary: Get vendor profile details by registration ID
  *     tags: [Miscellaneous]
  *     security:

@@ -215,14 +215,29 @@ module.exports.putRegDetail = async function (req, res) {
     additional_detail1,
     additional_detail2,
     additional_detail3,
+    rating,
   } = req.body;
 
   const registrationId = req.params.reg_id;
   const existingRegistration = await Registration.findByPk(registrationId);
+  let newRating;
+  let newRatingMemberCount;
+  
 
   if (!existingRegistration) {
     return res.status(serviceResponse.notFound).json({ error: serviceResponse.registrationNotFound });
   } else if (existingRegistration) {
+    if(rating >=0 ){
+      if(parseFloat(rating) > 5.00){
+        return res.status(serviceResponse.badRequest).json({ error: 'Invalid Rating Value Provided' });
+      }
+      newRatingMemberCount = existingRegistration.rating_member_count + 1;
+      newRating = ((existingRegistration.rating * existingRegistration.rating_member_count) + rating)/newRatingMemberCount;
+    }else{
+      newRatingMemberCount = existingRegistration.rating_member_count;
+      newRating = existingRegistration.rating;
+    }
+    
     const [row, record] = await Registration.update(
       {
         name,
@@ -258,6 +273,8 @@ module.exports.putRegDetail = async function (req, res) {
         additional_detail1,
         additional_detail2,
         additional_detail3,
+        rating: newRating,
+        rating_member_count: newRatingMemberCount,
       },
       {
         where: {
