@@ -10,9 +10,8 @@ const PRODUCT_IMAGE_PATH = path.join(process.env.PRODUCT_IMAGE_PATH);
 const PRODUCT_CSV_PATH = path.join(process.env.PRODUCT_CSV_PATH);
 const CATEGORY_LOGO_PATH = path.join(process.env.CATEGORY_LOGO_PATH);
 const SOCIAL_MEDIA_MASTER_PATH = path.join(process.env.SOCIAL_MEDIA_MASTER_PATH);
-const CARD_IMAGE_PATH = path.join(
-  process.env.CARD_IMAGE_PATH
-);
+const CARD_IMAGE_PATH = path.join(process.env.CARD_IMAGE_PATH);
+const REVIEW_IMAGE_PATH = path.join(process.env.REVIEW_IMAGE_PATH);
 
 // //////////////################FREE LANCER RESUME################////////////////////////
 const freelancerResume = multer.diskStorage({
@@ -508,3 +507,66 @@ module.exports.uploadCardImage = multer({
   },
 });
 
+
+//################################ RIVIEW IMAGE UPLOAD ###################################//
+
+const ReviewImageUpload = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const destinationPath = path.join(
+      __dirname,
+      "..",
+      REVIEW_IMAGE_PATH
+    );
+    // Check if the destination directory exists
+    fs.access(destinationPath, fs.constants.F_OK, (err) => {
+      if (err) {
+        // If directory doesn't exist, create it
+        fs.mkdir(destinationPath, { recursive: true }, (err) => {
+          if (err) {
+            console.error("Error creating directory:", err);
+            cb(err, null);
+          } else {
+            cb(null, destinationPath);
+          }
+        });
+      } else {
+        cb(null, destinationPath);
+      }
+    });
+  },
+  filename: function (req, file, cb) {
+    const uniqueFilename = `${Date.now()}${Math.random()
+      .toString()
+      .slice(15)}${path.extname(file.originalname)}`;
+    cb(null, uniqueFilename);
+  },
+});
+const filterReviewImage = function (req, file, cb) {
+  try {
+    const allowedFileTypes = /jpeg|jpg|png|gif/;
+    const mimetype = allowedFileTypes.test(file.mimetype);
+    const extname = allowedFileTypes.test(
+      path.extname(file.originalname).toLowerCase()
+    );
+
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+
+    const error = new Error("Only JPEG, JPG, Gif, and PNG files are allowed!");
+    error.status = 400; // Set the status code for the error
+
+    cb(error);
+  } catch (err) {
+    console.log("error in fileFilter function", err.message);
+  }
+};
+
+module.exports.uploadReviewImage = multer({
+  storage: ReviewImageUpload,
+  fileFilter: filterReviewImage,
+  limits: {
+    fileSize: 2 * 1024 * 1024, // 2MB
+    files: 1,
+  },
+});
