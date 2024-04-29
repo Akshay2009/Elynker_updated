@@ -83,7 +83,7 @@
  *         - name: x-access-token
  *           in: header
  *           description: Access token for authentication
- *           required: true
+ *           required: false
  *           schema:
  *             type: string
  *         - name: page

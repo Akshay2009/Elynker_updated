@@ -105,10 +105,14 @@ module.exports.updateWidgets = async function (req, res) {
         returning: true,
       }
     );
-    return res.status(serviceResponse.ok).json({
-      message: serviceResponse.updatedMessage,
-      data: record[0],
-    });
+    if(row){
+      return res.status(serviceResponse.ok).json({
+        message: serviceResponse.updatedMessage,
+        data: record[0],
+      });
+    }else{
+      return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
+    }
   } catch (err) {
     logErrorToFile.logErrorToFile(err, "widgets.controller", "updateWidgets");
     if (err instanceof Sequelize.Error) {

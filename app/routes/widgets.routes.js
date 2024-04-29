@@ -16,7 +16,7 @@ module.exports = function (app) {
    * @param {Function[]} [authJwt.verifyToken],
    * @param {Function} Widgets.getWidgets, - Controller function to get widgets details--**/
 
-  app.get("/api/widgets", [authJwt.verifyToken], Widgets.getWidgets);
+  app.get("/api/widgets", /*[authJwt.verifyToken]*/ Widgets.getWidgets);
 
   /**
    * Endpoint to update widgets details--

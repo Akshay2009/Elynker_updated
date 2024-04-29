@@ -216,6 +216,7 @@ module.exports.putRegDetail = async function (req, res) {
     additional_detail2,
     additional_detail3,
     rating,
+    freelancer_skills,
   } = req.body;
 
   const registrationId = req.params.reg_id;
@@ -236,6 +237,12 @@ module.exports.putRegDetail = async function (req, res) {
     }else{
       newRatingMemberCount = existingRegistration.rating_member_count;
       newRating = existingRegistration.rating;
+    }
+
+    if(freelancer_skills){
+      if (!Array.isArray(freelancer_skills) || freelancer_skills.length > 5) {
+        return res.status(serviceResponse.badRequest).json({ error: 'Invalid skills format or exceeds maximum limit of 5' });
+      }
     }
     
     const [row, record] = await Registration.update(
@@ -275,6 +282,7 @@ module.exports.putRegDetail = async function (req, res) {
         additional_detail3,
         rating: newRating,
         rating_member_count: newRatingMemberCount,
+        freelancer_skills: freelancer_skills,
       },
       {
         where: {

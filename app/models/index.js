@@ -46,6 +46,8 @@ db.moduleDetails = require('../models/moduleDetails.model.js')(sequelize, Sequel
 db.membersContacted = require('../models/membersContacted.js')(sequelize, Sequelize);
 db.cardSharing = require('./cardSharing.model.js')(sequelize,Sequelize);
 db.widgets = require('../models/widgets.model.js')(sequelize,Sequelize);
+db.requirement = require('../models/requirement.model.js')(sequelize,Sequelize);
+db.addPage = require('../models/addPage.model.js')(sequelize,Sequelize);
 
 db.role.belongsToMany(db.user, {
   through: 'user_roles',
