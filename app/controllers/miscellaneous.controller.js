@@ -20,6 +20,7 @@ const CardSharing = db.cardSharing;
 const CARD_IMAGE_PATH = path.join(
   process.env.CARD_IMAGE_PATH
 );
+const vendorReviews = db.vendorReviews;
 
 /**
  *Endpoint to get filter vendors details based on type location category rating -----
@@ -323,7 +324,10 @@ module.exports.getVendorByRegId = async function(req, res) {
             },
             {
                 model: MembersContacted,
-            }
+            }, 
+            {
+                model: vendorReviews,
+            },
         ];
         const vendor = await Registration.findAll({
             where: whereCondition,
@@ -341,12 +345,22 @@ module.exports.getVendorByRegId = async function(req, res) {
             });
             // Mock reviews data
             const returnData = vendor.map((entry)=>{
-                return {
+                const updatedResponse =  {
                     ...entry.toJSON(),
-                    reviews: [{"review":"Static Review 1"},{"review":"Static Review 2"}],
+                    reviews: entry.vendor_reviews.map((review) => ({
+                        review: review.review_description,
+                        review_star: review.review_star,
+                        createdAt: review.createdAt,
+                        reviewer_user_id: review.reviewer_user_id,
+                        image_path:  review.image_path,
+                        reviewer_name: review.reviewer_name,
+                        reviewer_image_path: review.reviewer_image_path,
+                    })),
                     contacted_members: entry.contacted_members.length,
                     categories: categories
                 }
+                delete updatedResponse.vendor_reviews;
+                return updatedResponse;
             });
 
             // Send response with both vendor details and reviews
@@ -442,7 +456,10 @@ module.exports.getVendorFreelancerByRegId = async function(req, res) {
             },
             {
                 model: MembersContacted,
-            }
+            },
+            {
+                model: vendorReviews,
+            },
         ];
         const vendor = await Registration.findAll({
             where: whereCondition,
@@ -460,12 +477,22 @@ module.exports.getVendorFreelancerByRegId = async function(req, res) {
             });
             // Mock reviews data
             const returnData = vendor.map((entry)=>{
-                return {
+                const updatedResponse =  {
                     ...entry.toJSON(),
-                    reviews: [{"review":"Static Review 1"},{"review":"Static Review 2"}],
+                    reviews: entry.vendor_reviews.map((review) => ({
+                        review: review.review_description,
+                        review_star: review.review_star,
+                        createdAt: review.createdAt,
+                        reviewer_user_id: review.reviewer_user_id,
+                        image_path:  review.image_path,
+                        reviewer_name: review.reviewer_name,
+                        reviewer_image_path: review.reviewer_image_path,
+                    })),
                     contacted_members: entry.contacted_members.length,
                     categories: categories
                 }
+                delete updatedResponse.vendor_reviews;
+                return updatedResponse;
             });
 
             // Send response with both vendor details and reviews

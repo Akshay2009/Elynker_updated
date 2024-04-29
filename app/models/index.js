@@ -46,6 +46,7 @@ db.moduleDetails = require('../models/moduleDetails.model.js')(sequelize, Sequel
 db.membersContacted = require('../models/membersContacted.js')(sequelize, Sequelize);
 db.cardSharing = require('./cardSharing.model.js')(sequelize,Sequelize);
 db.widgets = require('../models/widgets.model.js')(sequelize,Sequelize);
+db.vendorReviews = require('../models/vendorReviews.model.js')(sequelize,Sequelize);
 
 db.role.belongsToMany(db.user, {
   through: 'user_roles',
@@ -116,5 +117,9 @@ db.enquiry.belongsTo(db.registration);
 // associate registration and product as 1:m 
 db.registration.hasMany(db.membersContacted, { onDelete: 'CASCADE' });
 db.membersContacted.belongsTo(db.registration);
+
+// associate certificate with registration as 1:m foreign key on certificate
+db.registration.hasMany(db.vendorReviews, { onDelete: 'CASCADE' });
+db.vendorReviews.belongsTo(db.registration);
 
 module.exports = db;

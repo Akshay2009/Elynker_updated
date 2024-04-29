@@ -19,7 +19,7 @@ const enquiryRoutes = require('../routes/enquiry.routes');
 const moduleDetailsRoutes = require('../routes/moduleDetails.routes');
 const membersContactedRoute = require('../routes/membersContacted.routes');
 const widgets = require('../routes/widgets.routes');
-
+const vendorReviews = require('../routes/vendorReviews.routes');
 module.exports = function initializeRoutes(app) {
   authRoutes(app);
   userRoutes(app);
@@ -41,4 +41,5 @@ module.exports = function initializeRoutes(app) {
   moduleDetailsRoutes(app);
   membersContactedRoute(app);
   widgets(app);
+  vendorReviews(app);
 };
