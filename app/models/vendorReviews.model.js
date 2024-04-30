@@ -23,7 +23,7 @@ module.exports = (sequelize, Sequelize) => {
       },
     },
     image_path: {
-      type: Sequelize.ARRAY(Sequelize.STRING),
+      type: Sequelize.STRING(1000),
     },
     reviewer_name: {
       type: Sequelize.STRING(100),

@@ -40,7 +40,7 @@ module.exports.saveVendorReviews = async function (req, res) {
       review_description: review_description,
       review_star: review_star,
       created_by: created_by,
-      image_path: imagePath,
+      image_path: imagePath.join(","),
       registrationId: registrationId,
       reviewer_name: registrationOfUser.name,
       reviewer_image_path: registrationOfUser.image_path,
