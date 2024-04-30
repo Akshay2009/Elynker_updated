@@ -19,22 +19,21 @@ module.exports.saveVendorReviews = async function (req, res) {
     });
     const existingRegistration = await Registration.findByPk(registrationId);
     if (!existingRegistration || !registrationOfUser) {
-      fs.unlinkSync(
-        path.join(
-          __dirname,
-          "../..",
-          REVIEW_IMAGE_PATH,
-          "/",
-          req.files["image"][0].filename
-        )
-      );
+      if (req.files && req.files["image"]) {
+        req.files["image"].forEach((file) => {
+          fs.unlinkSync(file.path);
+        });
+      }
+      
       return res
         .status(serviceResponse.notFound)
-        .json({ error: 'Vendor Registration not found or Reviewer Registration not found' });
+        .json({ error: 'Vendor Registration not found or Reviwer Registration not found' });
     }
-    let imagePath;
+    let imagePath= [];
     if (req.files !== undefined && req.files["image"]) {
-      imagePath = req.files["image"][0].filename;
+      req.files["image"].forEach((file) => {
+        imagePath.push(file.filename);
+      });
     }
     const record = await Reviews.create({
       reviewer_user_id: reviewer_user_id,
@@ -46,7 +45,7 @@ module.exports.saveVendorReviews = async function (req, res) {
       reviewer_name: registrationOfUser.name,
       reviewer_image_path: registrationOfUser.image_path,
     });
-
+    
     if (record) {
       return res.status(serviceResponse.saveSuccess).json({
         message: serviceResponse.createdMessage,
@@ -70,7 +69,7 @@ module.exports.saveVendorReviews = async function (req, res) {
     }
     return res
       .status(serviceResponse.internalServerError)
-      .json({ error: serviceResponse.internalServerErrorMessage });
+      .json({ error: serviceResponse.internalServerErrorMessage+" "+err.message });
   }
 };
 

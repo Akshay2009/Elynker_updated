@@ -567,6 +567,6 @@ module.exports.uploadReviewImage = multer({
   fileFilter: filterReviewImage,
   limits: {
     fileSize: 2 * 1024 * 1024, // 2MB
-    files: 1,
+    files: 5,
   },
 });
