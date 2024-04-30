@@ -21,8 +21,9 @@ const membersContactedRoute = require('../routes/membersContacted.routes');
 const widgets = require('../routes/widgets.routes');
 const requirementRoutes = require('../routes/requirement.routes'); 
 const addPagesRoutes = require('../routes/addPage.routes');
-
 const vendorReviews = require('../routes/vendorReviews.routes');
+const systemModules = require('../routes/systemModules.routes')
+
 module.exports = function initializeRoutes(app) {
   authRoutes(app);
   userRoutes(app);
@@ -47,4 +48,5 @@ module.exports = function initializeRoutes(app) {
   requirementRoutes(app);
   addPagesRoutes(app);
   vendorReviews(app);
+  systemModules(app);
 };
