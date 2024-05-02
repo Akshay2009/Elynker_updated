@@ -3,6 +3,7 @@ const Requirement = db.requirement;
 const Sequelize = db.Sequelize;
 const logErrorToFile = require('../logger');
 const serviceResponse = require('../config/serviceResponse');
+const Registration = db.registration;
 
 
 /**
@@ -14,7 +15,14 @@ const serviceResponse = require('../config/serviceResponse');
  */
 module.exports.saveRequirement = async function(req, res) {
     try {
-        const { product_type, product_service_name, category, order_quantity, location, description, budget, name, comments, mobile_number, status, created_by, updated_by } = req.body;
+        const { product_type, product_service_name, category, order_quantity, location, description, budget, name, comments, mobile_number, status, created_by, updated_by, registrationId } = req.body;
+        if(!registrationId){
+            return res.status(serviceResponse.badRequest).json({ error: 'RegistrationId not provided' });
+        }
+        const regRecord = await Registration.findByPk(registrationId);
+        if(!regRecord){
+            return res.status(serviceResponse.badRequest).json({ error: serviceResponse.registrationNotFound });
+        }
         
         if (parseInt(product_type) === 1) {
             // product_type 1: budget should NOT be provided
@@ -44,6 +52,7 @@ module.exports.saveRequirement = async function(req, res) {
             status,
             created_by,
             updated_by,
+            registrationId: registrationId
         });
         if(record) {
             return res.status(serviceResponse.saveSuccess).json({ message: serviceResponse.createdMessage, data: record });
@@ -69,7 +78,14 @@ module.exports.saveRequirement = async function(req, res) {
 module.exports.updateRequirement = async function(req, res) {
     try{
         const id = req.params.id;
-        let { product_type, product_service_name, category, order_quantity, location, description, budget, name, comments, mobile_number, status, created_by, updated_by  } = req.body;
+        let { product_type, product_service_name, category, order_quantity, location, description, budget, name, comments, mobile_number, status, created_by, updated_by, registrationId  } = req.body;
+        if(registrationId){
+            const regRecord = await Registration.findByPk(registrationId);
+            if (!regRecord) {
+                return res.status(serviceResponse.badRequest).json({ error: serviceResponse.registrationNotFound });
+            }
+        }
+
         // Get existing record
         const existingRequirement = await Requirement.findByPk(id);
 
@@ -106,7 +122,7 @@ module.exports.updateRequirement = async function(req, res) {
         }
 
         const [row, record] = await Requirement.update({
-            product_type: parseInt(product_type),
+            product_type: product_type,
             product_service_name: product_service_name,
             category: category,
             order_quantity: order_quantity,
@@ -119,6 +135,7 @@ module.exports.updateRequirement = async function(req, res) {
             status: status,
             created_by,
             updated_by,
+            registrationId: registrationId,
         }, {
             where: {
                 id: id,

@@ -125,4 +125,8 @@ db.membersContacted.belongsTo(db.registration);
 db.registration.hasMany(db.vendorReviews, { onDelete: 'CASCADE' });
 db.vendorReviews.belongsTo(db.registration);
 
+// associate Registration and requirement as 1 to m
+db.registration.hasMany(db.requirement, { onDelete: 'CASCADE' });
+db.requirement.belongsTo(db.registration);
+
 module.exports = db;

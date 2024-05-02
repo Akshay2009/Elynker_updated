@@ -50,6 +50,8 @@
  *           type: number
  *         updated_by:
  *           type: number
+ *         registrationId:
+ *           type: number
  */
 
 /**
