@@ -343,6 +343,15 @@ module.exports.getVendorByRegId = async function(req, res) {
                     }));
                 });
             });
+
+            // Calculate count of review_stars
+            const reviewStarsCount = vendor.reduce((acc, entry) => {
+                entry.vendor_reviews.forEach((review) => {
+                    acc[review.review_star] = (acc[review.review_star] || 0) + 1;
+                });
+                return acc;
+            }, {});
+
             // Mock reviews data
             const returnData = vendor.map((entry)=>{
                 const updatedResponse =  {
@@ -367,6 +376,7 @@ module.exports.getVendorByRegId = async function(req, res) {
             return res.status(serviceResponse.ok).json({ 
                 message: serviceResponse.getMessage, 
                 data: returnData[0],
+                reviewStarsCount: reviewStarsCount,
             });
         } else {
             return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
@@ -475,6 +485,13 @@ module.exports.getVendorFreelancerByRegId = async function(req, res) {
                     }));
                 });
             });
+            // Calculate count of review_stars
+            const reviewStarsCount = vendor.reduce((acc, entry) => {
+                entry.vendor_reviews.forEach((review) => {
+                    acc[review.review_star] = (acc[review.review_star] || 0) + 1;
+                });
+                return acc;
+            }, {});
             // Mock reviews data
             const returnData = vendor.map((entry)=>{
                 const updatedResponse =  {
@@ -499,6 +516,7 @@ module.exports.getVendorFreelancerByRegId = async function(req, res) {
             return res.status(serviceResponse.ok).json({ 
                 message: serviceResponse.getMessage, 
                 data: returnData[0],
+                reviewStarsCount: reviewStarsCount,
             });
         } else {
             return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
