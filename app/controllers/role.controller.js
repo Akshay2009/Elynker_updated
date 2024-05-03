@@ -1,8 +1,11 @@
 const db = require('../models');
 const Role = db.role;
+const RolePermission = db.rolePermission;
 const Sequelize = db.Sequelize;
 const logErrorToFile = require('../logger');
 const serviceResponse = require('../config/serviceResponse');
+const SystemModule = db.systemModules;
+
 
 /**
  * Save Role details in the database.
@@ -13,16 +16,47 @@ const serviceResponse = require('../config/serviceResponse');
  */
 module.exports.saveRole = async function (req, res) {
     try {
-        const allRecords = await Role.findAll({});
+        const allRecords = await Role.findAll({
+            order: [['id', 'ASC']],
+        });
         const { name, permissions, created_by, updated_by } = req.body;
+        if(!name || !permissions){
+            return res.status(serviceResponse.badRequest).json({ error:" Name or permissions not provided "});
+        }
+        const arrayOfPermissions = permissions.split(",");
+        const systemModulesRecord = await SystemModule.findAll({
+            attributes: ['id'],
+            where: {
+                id: arrayOfPermissions
+            }
+        });
+        const systemArray =[];
+        systemModulesRecord.forEach(element => {
+            systemArray.push(element.id);
+        });
+        let rolePermissionArray = [];
+        for (const module of systemModulesRecord) {
+            const [record] = await RolePermission.findOrCreate({
+                where: { systemModuleId: module.id },
+                defaults: {
+                    system_module_id: module.id,
+                    systemModuleId: module.id,
+                },
+            });
+            rolePermissionArray.push(record.id);
+        }
+
         const record = await Role.create({
             id: allRecords[allRecords.length - 1].id + 1, // get the last record id and do +1 to id 
             name: name,
-            permissions: permissions,
+            permissions: systemArray.join(","),
             created_by: created_by,
             updated_by: updated_by,
         });
         if (record) {
+            if(rolePermissionArray.length>0){
+                await record.setRole_permissions(rolePermissionArray);
+            }
             return res.status(serviceResponse.saveSuccess).json({ message: serviceResponse.createdMessage, data: record });
         } else {
             return res.status(serviceResponse.badRequest).json({ error: serviceResponse.errorCreatingRecord });
@@ -47,18 +81,55 @@ module.exports.updateRole = async function (req, res) {
     try {
         const id = req.params.id;
         const { name, permissions, created_by, updated_by } = req.body;
-        const [row, record] = await Role.update({
+        // Find the role by ID
+        const role = await Role.findByPk(id);
+        if (!role) {
+            return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
+        }
+
+        const updateObject = {
             name: name,
-            permissions: permissions,
             created_by: created_by,
             updated_by: updated_by
-        }, {
+        };
+
+        let permissonArray = [];
+        let rolePermissionArray = [];
+        if (permissions) {
+            const arrayOfPermissions = permissions.split(",");
+            const systemModulesRecords = await SystemModule.findAll({
+                attributes: ['id'],
+                where: {
+                    id: arrayOfPermissions
+                }
+            });
+            permissonArray = systemModulesRecords.map(permission => permission.id);
+            for (const module of systemModulesRecords) {
+                const [record] = await RolePermission.findOrCreate({
+                    where: { systemModuleId: module.id },
+                    defaults: {
+                        system_module_id: module.id,
+                        systemModuleId: module.id,
+                    },
+                });
+                rolePermissionArray.push(record.id);
+            }           
+        }
+        if(rolePermissionArray.length>0){
+            rolePermissionArray = rolePermissionArray;
+            updateObject.permissions = permissonArray.join(",");
+        }
+        
+        const [row, record] = await Role.update(updateObject, {
             where: {
                 id: id,
             },
             returning: true,
         });
         if (row > 0) {
+            if(rolePermissionArray.length>0){
+                await record[0].setRole_permissions(rolePermissionArray);
+            }
             return res.status(serviceResponse.ok).json({ message: serviceResponse.updatedMessage, data: record[0] });
         } else {
             return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
@@ -68,7 +139,7 @@ module.exports.updateRole = async function (req, res) {
         if (err instanceof Sequelize.Error) {
             return res.status(serviceResponse.badRequest).json({ error: err.message });
         }
-        return res.status(serviceResponse.internalServerError).json({ error: serviceResponse.internalServerErrorMessage });
+        return res.status(serviceResponse.internalServerError).json({ error: serviceResponse.internalServerErrorMessage+" "+err.message });
     }
 };
 
@@ -125,7 +196,19 @@ module.exports.getAll = async function (req, res) {
         const { count, rows } = await Role.findAndCountAll({
           limit: pageSize,
           offset: offset,
-          order: [['createdAt', 'ASC']],
+          order: [['id', 'ASC']],
+          include: [
+            {
+                model: RolePermission,
+                include: [
+                    {
+                        model: SystemModule,
+                        attributes: ['id','module_name', 'is_active'],
+                    },
+                ],
+                through: { attributes: [] },
+            },
+        ],
         });
         if (count > 0) {
           return res.status(serviceResponse.ok).json({ message: serviceResponse.getMessage, totalRecords: count, data: rows });
@@ -156,6 +239,18 @@ module.exports.getRoleById = async function (req, res) {
             where: {
                 id: id,
             },
+            include: [
+                {
+                    model: RolePermission,
+                    include: [
+                        {
+                            model: SystemModule,
+                            attributes: ['id','module_name', 'is_active'],
+                        },
+                    ],
+                    through: { attributes: [] },
+                },
+            ],
         });
         if (record) {
             return res.status(serviceResponse.ok).json({ message: serviceResponse.getMessage, data: record });
@@ -189,6 +284,18 @@ module.exports.search = async function (req, res) {
             where: {
                 [fieldName]: fieldValue,
             },
+            include: [
+                {
+                    model: RolePermission,
+                    include: [
+                        {
+                            model: SystemModule,
+                            attributes: ['id','module_name', 'is_active'],
+                        },
+                    ],
+                    through: { attributes: [] },
+                },
+            ],
         });
         if (records.length > 0) {
             return res.status(serviceResponse.ok).json({ message: serviceResponse.getMessage, data: records });

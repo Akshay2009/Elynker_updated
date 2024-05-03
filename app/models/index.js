@@ -50,6 +50,7 @@ db.requirement = require('../models/requirement.model.js')(sequelize,Sequelize);
 db.addPage = require('../models/addPage.model.js')(sequelize,Sequelize);
 db.vendorReviews = require('../models/vendorReviews.model.js')(sequelize,Sequelize);
 db.systemModules = require('../models/systemModules.model.js')(sequelize,Sequelize);
+db.rolePermission = require('../models/rolePermission.model.js')(sequelize,Sequelize);
 
 db.role.belongsToMany(db.user, {
   through: 'user_roles',
@@ -113,16 +114,36 @@ db.category.belongsToMany(db.registration, {
   onDelete: 'CASCADE',
 });
 
-// associate Registration and freelancerBannerProject as 1 to m
+// associate Registration and enquiry as 1 to m
 db.registration.hasMany(db.enquiry, { onDelete: 'CASCADE' });
 db.enquiry.belongsTo(db.registration);
 
-// associate registration and product as 1:m 
+// associate registration and membersContacted as 1:m 
 db.registration.hasMany(db.membersContacted, { onDelete: 'CASCADE' });
 db.membersContacted.belongsTo(db.registration);
 
 // associate certificate with registration as 1:m foreign key on certificate
 db.registration.hasMany(db.vendorReviews, { onDelete: 'CASCADE' });
 db.vendorReviews.belongsTo(db.registration);
+
+
+
+// associate Role and RolePermission as m:m
+db.role.belongsToMany(db.rolePermission, {
+  through: 'role_rolePermissions',
+  onDelete: 'CASCADE',
+});
+db.rolePermission.belongsToMany(db.role, {
+  through: 'role_rolePermissions',
+  onDelete: 'CASCADE',
+});
+
+//associate systemModules and rolePermission as 1 to m
+db.systemModules.hasMany(db.rolePermission, {
+  onDelete: 'CASCADE',
+});
+db.rolePermission.belongsTo(db.systemModules, {
+  onDelete: 'CASCADE',
+});
 
 module.exports = db;

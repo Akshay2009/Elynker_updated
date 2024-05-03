@@ -5,6 +5,8 @@ const Role = db.role;
 const Registration = db.registration;
 const serviceResponse = require('../config/serviceResponse');
 const Category = db.category;
+const RolePermission = db.rolePermission;
+const SystemModule = db.systemModules;
 
 
 const Op = db.Sequelize.Op;
@@ -105,8 +107,21 @@ exports.signin = async (req, res) => {
     include: [
       {
         model: Role,
-        attributes: ['name', 'permissions'], 
+        attributes: ['id','name'], 
         through: { attributes: [], },
+        include: [
+          {
+            model: RolePermission,
+            attributes: { exclude: ['created_by', 'updated_by', 'createdAt', 'updatedAt'] },
+            include: [
+              {
+                model: SystemModule,
+                attributes: ['id','module_name'],
+              },
+            ],
+            through: { attributes: [], },
+          },
+        ],
       },
     ],
   })
