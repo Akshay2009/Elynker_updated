@@ -1,0 +1,2 @@
+Branch,Commit Message,Timestamp,Worked Time,Work Details
+shubham_apr25,Created Requirement API, Created Page Cms API, Created freelancer_skills on registration model and updated put api and removed and removed token from widget get endpoint,2024-04-29 11:28:53,424354 seconds,- Implement Requirement API to handle requirements data\n- Develop Page CMS API for managing content pages\n- Add freelancer_skills field to registration model\n- Update PUT API functionality\n- Remove token from widget GET endpoint
