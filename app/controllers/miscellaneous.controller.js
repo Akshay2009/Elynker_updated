@@ -335,20 +335,27 @@ module.exports.getVendorByRegId = async function(req, res) {
         });
 
         if (vendor.length>0) {
-            const categories = vendor.flatMap((entry) => {
-                return entry.products.flatMap((product) => {
-                    return product.categories.map((category) => ({
-                        id: category.id,
-                        title: category.title
-                    }));
-                });
-            });
+            // const categories = vendor.flatMap((entry) => {
+            //     return entry.products.flatMap((product) => {
+            //         return product.categories.map((category) => ({
+            //             id: category.id,
+            //             title: category.title
+            //         }));
+            //     });
+            // });
 
+            const categoriesMap = new Map();
+            vendor.flatMap(entry => entry.products.flatMap(product => product.categories))
+                .forEach(category => categoriesMap.set(category.id, { id: category.id, title: category.title }));
+
+            const categories = Array.from(categoriesMap.values());
             // Calculate count of review_stars
             const reviewStarsCount = vendor.reduce((acc, entry) => {
-                entry.vendor_reviews.forEach((review) => {
-                    acc[review.review_star] = (acc[review.review_star] || 0) + 1;
-                });
+                entry.vendor_reviews
+                    .filter(review => review.review_star !== null)
+                    .forEach((review) => {
+                        acc[review.review_star] = (acc[review.review_star] || 0) + 1;
+                    });
                 return acc;
             }, {});
 
@@ -372,12 +379,15 @@ module.exports.getVendorByRegId = async function(req, res) {
                 return updatedResponse;
             });
 
-            // Send response with both vendor details and reviews
+            
+            //Send response with both vendor details and reviews
             return res.status(serviceResponse.ok).json({ 
                 message: serviceResponse.getMessage, 
                 data: returnData[0],
-                reviewStarsCount: reviewStarsCount,
+                //reviewStarsCount: reviewStarsCount,
+                ...(Object.keys(reviewStarsCount).length > 0 && { reviewStarsCount }),
             });
+            
         } else {
             return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
         }
@@ -477,19 +487,27 @@ module.exports.getVendorFreelancerByRegId = async function(req, res) {
         });
 
         if (vendor.length>0) {
-            const categories = vendor.flatMap((entry) => {
-                return entry.products.flatMap((product) => {
-                    return product.categories.map((category) => ({
-                        id: category.id,
-                        title: category.title
-                    }));
-                });
-            });
+            // const categories = vendor.flatMap((entry) => {
+            //     return entry.products.flatMap((product) => {
+            //         return product.categories.map((category) => ({
+            //             id: category.id,
+            //             title: category.title
+            //         }));
+            //     });
+            // });
+
+            const categoriesMap = new Map();
+            vendor.flatMap(entry => entry.products.flatMap(product => product.categories))
+                .forEach(category => categoriesMap.set(category.id, { id: category.id, title: category.title }));
+
+            const categories = Array.from(categoriesMap.values());
             // Calculate count of review_stars
             const reviewStarsCount = vendor.reduce((acc, entry) => {
-                entry.vendor_reviews.forEach((review) => {
-                    acc[review.review_star] = (acc[review.review_star] || 0) + 1;
-                });
+                entry.vendor_reviews
+                    .filter(review => review.review_star !== null)
+                    .forEach((review) => {
+                        acc[review.review_star] = (acc[review.review_star] || 0) + 1;
+                    });
                 return acc;
             }, {});
             // Mock reviews data
@@ -516,7 +534,8 @@ module.exports.getVendorFreelancerByRegId = async function(req, res) {
             return res.status(serviceResponse.ok).json({ 
                 message: serviceResponse.getMessage, 
                 data: returnData[0],
-                reviewStarsCount: reviewStarsCount,
+                //reviewStarsCount: reviewStarsCount,
+                ...(Object.keys(reviewStarsCount).length > 0 && { reviewStarsCount })
             });
         } else {
             return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
