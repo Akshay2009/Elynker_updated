@@ -485,7 +485,6 @@ module.exports.getVendorFreelancerByRegId = async function(req, res) {
             },
             {
                 model: Product,
-                attributes: ['id','budget'],
                 include:{
                     model: Category,
                     attributes: ['id','title'],
