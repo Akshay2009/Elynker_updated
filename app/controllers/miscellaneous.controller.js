@@ -16,6 +16,7 @@ const SocialLinks = db.sociallinks;
 const MembersContacted = db.membersContacted;
 const fs = require("fs");
 const path = require("path");
+const { where } = require('sequelize');
 const CardSharing = db.cardSharing;
 const CARD_IMAGE_PATH = path.join(
   process.env.CARD_IMAGE_PATH
@@ -53,15 +54,15 @@ module.exports.getVendorsByLocation = async (req, res) => {
         let includeOptions = [
             {
                 model: User,
-                attributes: ['id', 'mobile_number', 'country_code']
+                attributes: ['id', 'mobile_number', 'country_code'],
             },
             {
                 model: Product,
-                attributes: ['id']
+                attributes: ['id','budget'],
             },
             {
                 model: MembersContacted,
-                attributes: ['id']
+                attributes: ['id'],
             }
         ];
 
@@ -89,7 +90,7 @@ module.exports.getVendorsByLocation = async (req, res) => {
                 'company_name',
                 'education',
                 'available_hrs_per_week',
-                'hourly_rate',
+
                 'service_fee',
                 'freelancer_role',
                 'freelancer_bio',
@@ -107,6 +108,14 @@ module.exports.getVendorsByLocation = async (req, res) => {
         const formattedData = vendors.map(vendor => {
             const productCount = vendor.products.length; // Calculate product_count based on the number of products
             const memberCount = vendor.contacted_members.length; // Calculate member_count based on the number of contacted_members
+            let minBudget = null;
+            if(parseInt(type)===3){ 
+                const filteredProducts = vendor.products.filter(product => isFinite(product.budget));
+                //Calculate minimum budget only if there are products with finite budget values
+                if (filteredProducts.length > 0) {
+                    minBudget = Math.min(...filteredProducts.map(product => product.budget));
+                }
+            }
             return {
                 id: vendor.id,
                 name: vendor.name,
@@ -124,14 +133,14 @@ module.exports.getVendorsByLocation = async (req, res) => {
                 member_count: memberCount,
                 education: vendor.education,
                 available_hrs_per_week: vendor.available_hrs_per_week,
-                hourly_rate: vendor.hourly_rate,
+                hourly_rate: minBudget,
                 service_fee: vendor.service_fee,
                 freelancer_role: vendor.freelancer_role,
                 freelancer_bio: vendor.freelancer_bio,
                 language: vendor.language,
             };
         });
-        
+
         // Filter vendors based on the minimum rating
         const filteredVendors = formattedData.filter(vendor => vendor.rating >= minRating && vendor.product_count>0);
         const cities = [...new Set(filteredVendors.map(vendor => vendor.city))];
@@ -327,6 +336,11 @@ module.exports.getVendorByRegId = async function(req, res) {
             }, 
             {
                 model: vendorReviews,
+                where: {
+                    review_star: {
+                        [db.Sequelize.Op.not]: null // Include only records where review_star is not null
+                    }
+                }
             },
         ];
         const vendor = await Registration.findAll({
@@ -379,14 +393,26 @@ module.exports.getVendorByRegId = async function(req, res) {
                 return updatedResponse;
             });
 
-            
-            //Send response with both vendor details and reviews
-            return res.status(serviceResponse.ok).json({ 
+            const responseObject = {
                 message: serviceResponse.getMessage, 
                 data: returnData[0],
-                //reviewStarsCount: reviewStarsCount,
-                ...(Object.keys(reviewStarsCount).length > 0 && { reviewStarsCount }),
-            });
+            }
+            if(Object.keys(reviewStarsCount).length > 0){
+                responseObject.reviewStarsCount = reviewStarsCount;
+                const totalReviews = Object.values(reviewStarsCount).reduce((total, count) => total + count, 0);
+
+                const reviewStarsPercentages = {};
+                for (const star in reviewStarsCount) {
+                    const count = reviewStarsCount[star];
+                    const percentage = (count / totalReviews) * 100;
+                    reviewStarsPercentages[star] = percentage;
+                }
+                responseObject.reviewStarsPercentages = reviewStarsPercentages;
+            }
+
+            
+            //Send response with both vendor details and reviews
+            return res.status(serviceResponse.ok).json(responseObject);
             
         } else {
             return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
@@ -459,6 +485,7 @@ module.exports.getVendorFreelancerByRegId = async function(req, res) {
             },
             {
                 model: Product,
+                attributes: ['id','budget'],
                 include:{
                     model: Category,
                     attributes: ['id','title'],
@@ -479,6 +506,11 @@ module.exports.getVendorFreelancerByRegId = async function(req, res) {
             },
             {
                 model: vendorReviews,
+                where: {
+                    review_star: {
+                        [db.Sequelize.Op.not]: null // Include only records where review_star is not null
+                    }
+                }
             },
         ];
         const vendor = await Registration.findAll({
@@ -486,6 +518,7 @@ module.exports.getVendorFreelancerByRegId = async function(req, res) {
             include: includeOptions,
         });
 
+        
         if (vendor.length>0) {
             // const categories = vendor.flatMap((entry) => {
             //     return entry.products.flatMap((product) => {
@@ -510,6 +543,12 @@ module.exports.getVendorFreelancerByRegId = async function(req, res) {
                     });
                 return acc;
             }, {});
+            let minBudget = null;
+            const filteredProducts = vendor[0].products.filter(product => isFinite(product.budget));
+            //Calculate minimum budget only if there are products with finite budget values
+            if (filteredProducts.length > 0) {
+                minBudget = Math.min(...filteredProducts.map(product => product.budget));
+            }
             // Mock reviews data
             const returnData = vendor.map((entry)=>{
                 const updatedResponse =  {
@@ -524,19 +563,32 @@ module.exports.getVendorFreelancerByRegId = async function(req, res) {
                         reviewer_image_path: review.reviewer_image_path,
                     })),
                     contacted_members: entry.contacted_members.length,
-                    categories: categories
+                    categories: categories,
+                    hourly_rate: minBudget,
                 }
                 delete updatedResponse.vendor_reviews;
                 return updatedResponse;
             });
 
-            // Send response with both vendor details and reviews
-            return res.status(serviceResponse.ok).json({ 
+            const responseObject = {
                 message: serviceResponse.getMessage, 
                 data: returnData[0],
-                //reviewStarsCount: reviewStarsCount,
-                ...(Object.keys(reviewStarsCount).length > 0 && { reviewStarsCount })
-            });
+            }
+            if(Object.keys(reviewStarsCount).length > 0){
+                responseObject.reviewStarsCount = reviewStarsCount;
+                const totalReviews = Object.values(reviewStarsCount).reduce((total, count) => total + count, 0);
+
+                const reviewStarsPercentages = {};
+                for (const star in reviewStarsCount) {
+                    const count = reviewStarsCount[star];
+                    const percentage = (count / totalReviews) * 100;
+                    reviewStarsPercentages[star] = percentage;
+                }
+                responseObject.reviewStarsPercentages = reviewStarsPercentages;
+            }
+
+            // Send response with both vendor details and reviews
+            return res.status(serviceResponse.ok).json(responseObject);
         } else {
             return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
         }
