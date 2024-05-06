@@ -336,11 +336,6 @@ module.exports.getVendorByRegId = async function(req, res) {
             }, 
             {
                 model: vendorReviews,
-                where: {
-                    review_star: {
-                        [db.Sequelize.Op.not]: null // Include only records where review_star is not null
-                    }
-                }
             },
         ];
         const vendor = await Registration.findAll({
@@ -505,11 +500,6 @@ module.exports.getVendorFreelancerByRegId = async function(req, res) {
             },
             {
                 model: vendorReviews,
-                where: {
-                    review_star: {
-                        [db.Sequelize.Op.not]: null // Include only records where review_star is not null
-                    }
-                }
             },
         ];
         const vendor = await Registration.findAll({
