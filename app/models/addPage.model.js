@@ -4,7 +4,7 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING(50),
         },
         page_content: {
-            type: Sequelize.STRING(500),
+            type: Sequelize.TEXT,
         },
         status: {
             type: Sequelize.BOOLEAN,
