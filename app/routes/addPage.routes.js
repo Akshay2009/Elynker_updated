@@ -30,7 +30,7 @@ module.exports = function(app) {
      * Get  AddPage Record By Id
      */
     app.get('/api/page/:id',
-        [authJwt.verifyToken],
+        // [authJwt.verifyToken],
         controller.getById,
     );
 
@@ -38,7 +38,7 @@ module.exports = function(app) {
      * Get All AddPage Record
      */
     app.get('/api/page',
-        [authJwt.verifyToken],
+        // [authJwt.verifyToken],
         controller.getAll,
     );
 
@@ -46,7 +46,7 @@ module.exports = function(app) {
      * Search AddPage Record By fieldName and fieldValue
      */
     app.get('/api/page/search/:fieldName/:fieldValue',
-        [authJwt.verifyToken],
+        // [authJwt.verifyToken],
         controller.search,
     );
 };
