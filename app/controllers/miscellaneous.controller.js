@@ -366,7 +366,7 @@ module.exports.getVendorByRegId = async function(req, res) {
                         acc[review.review_star] = (acc[review.review_star] || 0) + 1;
                     });
                 return acc;
-            }, {});
+            }, {"1":0, "2":0, "3":0, "4":0, "5":0});
 
             // Mock reviews data
             const returnData = vendor.map((entry)=>{
@@ -393,16 +393,18 @@ module.exports.getVendorByRegId = async function(req, res) {
                 data: returnData[0],
             }
             if(Object.keys(reviewStarsCount).length > 0){
-                responseObject.reviewStarsCount = reviewStarsCount;
+                
                 const totalReviews = Object.values(reviewStarsCount).reduce((total, count) => total + count, 0);
-
-                const reviewStarsPercentages = {};
-                for (const star in reviewStarsCount) {
-                    const count = reviewStarsCount[star];
-                    const percentage = (count / totalReviews) * 100;
-                    reviewStarsPercentages[star] = percentage;
+                if(totalReviews>0){
+                    responseObject.reviewStarsCount = reviewStarsCount;
+                    const reviewStarsPercentages = {};
+                    for (const star in reviewStarsCount) {
+                        const count = reviewStarsCount[star];
+                        const percentage = (count / totalReviews) * 100;
+                        reviewStarsPercentages[star] = percentage;
+                    }
+                    responseObject.reviewStarsPercentages = reviewStarsPercentages;
                 }
-                responseObject.reviewStarsPercentages = reviewStarsPercentages;
             }
 
             
@@ -531,7 +533,7 @@ module.exports.getVendorFreelancerByRegId = async function(req, res) {
                         acc[review.review_star] = (acc[review.review_star] || 0) + 1;
                     });
                 return acc;
-            }, {});
+            }, {"1":0, "2":0, "3":0, "4":0, "5":0});
             let minBudget = null;
             const filteredProducts = vendor[0].products.filter(product => isFinite(product.budget));
             //Calculate minimum budget only if there are products with finite budget values
@@ -564,16 +566,17 @@ module.exports.getVendorFreelancerByRegId = async function(req, res) {
                 data: returnData[0],
             }
             if(Object.keys(reviewStarsCount).length > 0){
-                responseObject.reviewStarsCount = reviewStarsCount;
                 const totalReviews = Object.values(reviewStarsCount).reduce((total, count) => total + count, 0);
-
-                const reviewStarsPercentages = {};
-                for (const star in reviewStarsCount) {
-                    const count = reviewStarsCount[star];
-                    const percentage = (count / totalReviews) * 100;
-                    reviewStarsPercentages[star] = percentage;
+                if(totalReviews>0){
+                    responseObject.reviewStarsCount = reviewStarsCount;
+                    const reviewStarsPercentages = {};
+                    for (const star in reviewStarsCount) {
+                        const count = reviewStarsCount[star];
+                        const percentage = (count / totalReviews) * 100;
+                        reviewStarsPercentages[star] = percentage;
+                    }
+                    responseObject.reviewStarsPercentages = reviewStarsPercentages;
                 }
-                responseObject.reviewStarsPercentages = reviewStarsPercentages;
             }
 
             // Send response with both vendor details and reviews

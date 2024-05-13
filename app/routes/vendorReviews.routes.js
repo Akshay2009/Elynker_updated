@@ -39,4 +39,10 @@ module.exports = function (app) {
     [authJwt.verifyToken],
     vendorReviews.getVendorReviewsByRegId
   );
+
+  app.delete(
+    '/api/reviews/vendors',
+    [authJwt.verifyToken],
+    vendorReviews.deleteAll
+  );
 };

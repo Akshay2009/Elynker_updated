@@ -15,12 +15,11 @@ module.exports = (sequelize, Sequelize) => {
     },
     review_star: {
       type: Sequelize.INTEGER,
+      allowNull: false,
       validate: {
-        len: {
-          args: [0, 5],
-          msg: "Rating must be between 0-5 ",
-        },
-      },
+        min: 1,
+        max: 5
+      }
     },
     image_path: {
       type: Sequelize.STRING(1000),

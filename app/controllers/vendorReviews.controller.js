@@ -121,6 +121,7 @@ module.exports.getVendorReviews = async function (req, res) {
 //####################### GET VENDOR REVIEWS BY REGISTRATION ID ###############################//
 
 module.exports.getVendorReviewsByRegId = async function (req, res) {
+  try{
   const registrationId = req.params.registrationId;
   const reviewsRecord = await Reviews.findAll({
     where: { registrationId: registrationId },
@@ -133,5 +134,53 @@ module.exports.getVendorReviewsByRegId = async function (req, res) {
     return res
       .status(serviceResponse.notFound)
       .json({ error: serviceResponse.errorNotFound });
+  }
+}catch (err) {
+  logErrorToFile.logErrorToFile(
+    err,
+    "vendorReviews.controller",
+    "getVendorReviewsByRegId"
+  );
+  if (err instanceof Sequelize.Error) {
+    return res
+      .status(serviceResponse.badRequest)
+      .json({ error: err.message });
+  }
+  return res
+    .status(serviceResponse.internalServerError)
+    .json({ error: serviceResponse.internalServerErrorMessage });
+}
+};
+
+//delete All Vendor Reviews record
+module.exports.deleteAll = async function(req,res){
+  try{
+    const deletedRow = await Reviews.destroy({
+      where: {},
+    });
+    if(deletedRow){
+      return res.status(serviceResponse.ok).json({
+        message: 'All Reviews Records Deleted',
+        data: deletedRow,
+      });
+    }else{
+      return res
+        .status(serviceResponse.notFound)
+        .json({ error: serviceResponse.errorNotFound });
+    }
+  }catch (err) {
+    logErrorToFile.logErrorToFile(
+      err,
+      "vendorReviews.controller",
+      "deleteAll"
+    );
+    if (err instanceof Sequelize.Error) {
+      return res
+        .status(serviceResponse.badRequest)
+        .json({ error: err.message });
+    }
+    return res
+      .status(serviceResponse.internalServerError)
+      .json({ error: serviceResponse.internalServerErrorMessage });
   }
 };

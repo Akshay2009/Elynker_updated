@@ -228,7 +228,7 @@ module.exports.putRegDetail = async function (req, res) {
   if (!existingRegistration) {
     return res.status(serviceResponse.notFound).json({ error: serviceResponse.registrationNotFound });
   } else if (existingRegistration) {
-    if(rating >=0 ){
+    if(rating >0 ){
       if(parseFloat(rating) > 5.00){
         return res.status(serviceResponse.badRequest).json({ error: 'Invalid Rating Value Provided' });
       }
