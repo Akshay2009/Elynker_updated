@@ -488,13 +488,16 @@ module.exports.delcategories = async function (req, res) {
 module.exports.search = async function (req, res) {
   try {
     const { fieldName, fieldValue } = req.params;
+    const { status } = req.query;
     if (!Category.rawAttributes[fieldName]) {
       return res.status(serviceResponse.badRequest).json({ error: serviceResponse.fieldNotExistMessage });
     }
+    const whereClause = { [fieldName]: fieldValue };
+    if (status) {
+      whereClause.status = status;
+    }
     const categories = await Category.findAll({
-      where: {
-        [fieldName]: fieldValue,
-      },
+      where:whereClause,
     });
     if (categories.length > 0) {
       return res.status(serviceResponse.ok).json({ message: serviceResponse.getMessage, data: categories });
