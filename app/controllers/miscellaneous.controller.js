@@ -316,7 +316,12 @@ module.exports.getVendorByRegId = async function(req, res) {
         let whereCondition = {
             id: reg_id
         };
+        
         let includeOptions = [
+            {
+                model: User,
+                attributes: ['id', 'mobile_number', 'country_code']
+            },
             {
                 model: Product,
                 include:{
