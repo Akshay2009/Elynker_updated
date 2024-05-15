@@ -492,6 +492,7 @@ module.exports.delProductImages = async function (req, res) {
 module.exports.getParentCategory = async function (req, res) {
   try {
     const topLevel = [];
+    
     const registrationId = req.params.registrationId;
 
     const products = await Product.findAll({

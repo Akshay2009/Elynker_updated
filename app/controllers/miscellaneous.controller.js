@@ -316,6 +316,7 @@ module.exports.getVendorByRegId = async function(req, res) {
         let whereCondition = {
             id: reg_id
         };
+        
         let includeOptions = [
             {
                 model: User,
