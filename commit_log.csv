@@ -1,2 +1,11 @@
 Branch,Commit Message,Timestamp,Worked Time,Work Details
 shubham_apr25,Created Requirement API, Created Page Cms API, Created freelancer_skills on registration model and updated put api and removed and removed token from widget get endpoint,2024-04-29 11:28:53,424354 seconds,- Implement Requirement API to handle requirements data\n- Develop Page CMS API for managing content pages\n- Add freelancer_skills field to registration model\n- Update PUT API functionality\n- Remove token from widget GET endpoint
+shubham_may3,Updated response for vendor details/freelancer endpoint,2024-05-06 12:49:58,245218 seconds,
+shubham_may6,Optimized code for role,2024-05-06 15:40:21,10223 seconds,
+shubham_may62,Updated response for listing endpoint and freelancer detail page,2024-05-06 17:52:09,18131 seconds,
+shubham_may62,Fixed Responses for listing and freelnacer detail,2024-05-06 17:57:30,321 seconds,
+shubham_may62,Updated misc cont,2024-05-06 19:46:32,6542 seconds,
+shubham_may7,Updated page model for page_content field,2024-05-09 15:44:48,244696 seconds,
+shubham_may13,Upadted response and review model validation,2024-05-13 20:44:49,285900 seconds,
+shubham_may14,Updated search category controller for query params,2024-05-14 12:42:32,57463 seconds,
+shubham_may142,user,roles and auth changed,2024-05-15 13:21:46,146217 seconds,

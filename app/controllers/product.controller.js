@@ -491,11 +491,9 @@ module.exports.delProductImages = async function (req, res) {
 
 module.exports.getParentCategory = async function (req, res) {
   try {
-    const thirdLevel = [];
-    const secondLevel = [];
-    const firstLevel = [];
+    const topLevel = [];
     const registrationId = req.params.registrationId;
-    console.log('///', registrationId);
+
     const products = await Product.findAll({
       where: {
         registrationId: registrationId,
@@ -503,41 +501,22 @@ module.exports.getParentCategory = async function (req, res) {
     });
 
     if (products.length > 0) {
-      products.forEach((item) => {
-        console.log(item.category_id);
-        thirdLevel.push(parseInt(item.category_id));
+      const uniqueIds = new Set();
+      const promises = products.map(async (item) => {
+        const result = await getCategoryTopLevel(parseInt(item.category_id));
+        return result.dataValues;
       });
 
-      const thirdLevelCat = await Category.findAll({
-        where: {
-          id: {
-            [Op.in]: thirdLevel,
-          },
-        },
-      });
-      thirdLevelCat.forEach((item) => {
-        secondLevel.push(item.parent_id);
+      const results = await Promise.all(promises);
+
+      results.forEach((result) => {
+        if (!uniqueIds.has(result.id)) {
+          uniqueIds.add(result.id);
+          topLevel.push(result);
+        }
       });
 
-      const secondLevelCat = await Category.findAll({
-        where: {
-          id: {
-            [Op.in]: secondLevel,
-          },
-        },
-      });
-      secondLevelCat.forEach((item) => {
-        firstLevel.push(item.parent_id);
-      });
-
-      const firstLevelCat = await Category.findAll({
-        where: {
-          id: {
-            [Op.in]: firstLevel,
-          },
-        },
-      });
-      return res.status(serviceResponse.ok).json({ message: serviceResponse.getMessage, data: firstLevelCat });
+      return res.status(serviceResponse.ok).json({ message: serviceResponse.getMessage, data: topLevel });
     } else {
       return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
     }
