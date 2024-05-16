@@ -20,47 +20,63 @@ module.exports.saveRole = async function (req, res) {
             order: [['id', 'ASC']],
         });
         const { name, permissions, created_by, updated_by } = req.body;
-        if(!name || !permissions){
-            return res.status(serviceResponse.badRequest).json({ error:" Name or permissions not provided "});
+        if(!name){
+            return res.status(serviceResponse.badRequest).json({ error:" Name not provided "});
         }
-        const arrayOfPermissions = permissions.split(",");
-        const systemModulesRecord = await SystemModule.findAll({
-            attributes: ['id'],
-            where: {
-                id: arrayOfPermissions
-            }
-        });
-        const systemArray =[];
-        systemModulesRecord.forEach(element => {
-            systemArray.push(element.id);
-        });
-        let rolePermissionArray = [];
-        for (const module of systemModulesRecord) {
-            const [record] = await RolePermission.findOrCreate({
-                where: { systemModuleId: module.id },
-                defaults: {
-                    system_module_id: module.id,
-                    systemModuleId: module.id,
-                },
+        if (permissions) {
+            const arrayOfPermissions = permissions.split(",");
+            const systemModulesRecord = await SystemModule.findAll({
+                attributes: ['id'],
+                where: {
+                    id: arrayOfPermissions
+                }
             });
-            rolePermissionArray.push(record.id);
-        }
-
-        const record = await Role.create({
-            id: allRecords[allRecords.length - 1].id + 1, // get the last record id and do +1 to id 
-            name: name,
-            permissions: systemArray.join(","),
-            created_by: created_by,
-            updated_by: updated_by,
-        });
-        if (record) {
-            if(rolePermissionArray.length>0){
-                await record.setRole_permissions(rolePermissionArray);
+            const systemArray = [];
+            systemModulesRecord.forEach(element => {
+                systemArray.push(element.id);
+            });
+            let rolePermissionArray = [];
+            for (const module of systemModulesRecord) {
+                const [record] = await RolePermission.findOrCreate({
+                    where: { systemModuleId: module.id },
+                    defaults: {
+                        system_module_id: module.id,
+                        systemModuleId: module.id,
+                    },
+                });
+                rolePermissionArray.push(record.id);
             }
-            return res.status(serviceResponse.saveSuccess).json({ message: serviceResponse.createdMessage, data: record });
-        } else {
-            return res.status(serviceResponse.badRequest).json({ error: serviceResponse.errorCreatingRecord });
+
+            const record = await Role.create({
+                id: allRecords[allRecords.length - 1].id + 1, // get the last record id and do +1 to id 
+                name: name,
+                permissions: systemArray.join(","),
+                created_by: created_by,
+                updated_by: updated_by,
+            });
+            if (record) {
+                if (rolePermissionArray.length > 0) {
+                    await record.setRole_permissions(rolePermissionArray);
+                }
+                return res.status(serviceResponse.saveSuccess).json({ message: serviceResponse.createdMessage, data: record });
+            } else {
+                return res.status(serviceResponse.badRequest).json({ error: serviceResponse.errorCreatingRecord });
+            }
+        }else{
+            const record = await Role.create({
+                id: allRecords[allRecords.length - 1].id + 1, // get the last record id and do +1 to id 
+                name: name,
+                permissions,
+                created_by: created_by,
+                updated_by: updated_by,
+            });
+            if (record) {
+                return res.status(serviceResponse.saveSuccess).json({ message: serviceResponse.createdMessage, data: record });
+            } else {
+                return res.status(serviceResponse.badRequest).json({ error: serviceResponse.errorCreatingRecord });
+            }
         }
+        
     } catch (err) {
         logErrorToFile.logErrorToFile(err, 'role.controller', 'saveRole');
         if (err instanceof Sequelize.Error) {
@@ -69,6 +85,7 @@ module.exports.saveRole = async function (req, res) {
         return res.status(serviceResponse.internalServerError).json({ error: serviceResponse.internalServerErrorMessage });
     }
 };
+
 
 /**
  * Search Role details by ID from the database.

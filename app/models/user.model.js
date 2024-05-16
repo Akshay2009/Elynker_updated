@@ -57,6 +57,7 @@ module.exports = (sequelize, Sequelize) => {
     },
     is_active: {
       type: Sequelize.BOOLEAN,
+      defaultValue: true,
     },
     created_by: {
       type: Sequelize.NUMERIC,
