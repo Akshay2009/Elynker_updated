@@ -12,4 +12,10 @@ module.exports = function (app) {
     uploadadmintoolsdetails.single("file"), // Adjusted to use `single` instead of `fields`
     controller.uploadXLSX
   );
+
+  app.get(
+    "/api/admin/tools",
+    [authJwt.verifyToken],
+    controller.getAll
+  );
 };

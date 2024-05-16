@@ -1,7 +1,6 @@
 const db = require("../models");
 const logErrorToFile = require("../logger");
 const serviceResponse = require("../config/serviceResponse");
-const multer = require("multer");
 const fs = require("fs");
 const adminTools = db.adminTools;
 var XLSX = require("xlsx");
@@ -62,6 +61,47 @@ module.exports.uploadXLSX = async (req, res, next) => {
       message: jsonData.length + " rows added or updated in the database",
     });
   } catch (err) {
+    logErrorToFile.logErrorToFile(
+      err,
+      "adminTools.controller",
+      "uploadXLSX"
+    );
+    if (err instanceof db.Sequelize.Error) {
+      return res
+        .status(serviceResponse.badRequest)
+        .json({ error: err.message + " " + err.errors[0].message });
+    }
+    return res
+      .status(serviceResponse.internalServerError)
+      .json({
+        error: serviceResponse.internalServerErrorMessage + " " + err.message,
+      });
+  }
+};
+
+module.exports.getAll = async (req, res, next) => {
+  try {
+    const maxLimit = 50;
+    let { page, pageSize } = req.query;
+    page = page ? page : 1;
+    let offset = 0;
+    if (page && pageSize) {
+      pageSize = pageSize <= maxLimit ? pageSize : maxLimit;
+      offset = (page - 1) * pageSize;
+    }
+
+    const { count, rows } = await adminTools.findAndCountAll({
+      limit: pageSize,
+      offset: offset,
+      order: [['createdAt', 'ASC']],
+    });
+    if (count > 0) {
+        return res.status(serviceResponse.ok).json({ message: serviceResponse.getMessage, totalRecords: count, data: rows });
+    } else {
+      return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
+    }
+
+  }catch(err){
     logErrorToFile.logErrorToFile(
       err,
       "adminTools.controller",
