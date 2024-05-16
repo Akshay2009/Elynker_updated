@@ -12,6 +12,7 @@ const CATEGORY_LOGO_PATH = path.join(process.env.CATEGORY_LOGO_PATH);
 const SOCIAL_MEDIA_MASTER_PATH = path.join(process.env.SOCIAL_MEDIA_MASTER_PATH);
 const CARD_IMAGE_PATH = path.join(process.env.CARD_IMAGE_PATH);
 const REVIEW_IMAGE_PATH = path.join(process.env.REVIEW_IMAGE_PATH);
+const ADMIN_TOOL_PATH = path.join(__dirname, "..", process.env.ADMIN_TOOL_PATH);
 
 // //////////////################FREE LANCER RESUME################////////////////////////
 const freelancerResume = multer.diskStorage({
@@ -568,5 +569,64 @@ module.exports.uploadReviewImage = multer({
   limits: {
     fileSize: 2 * 1024 * 1024, // 2MB
     files: 5,
+  },
+});
+
+//################################ EXCEL TOOLS FILE UPLOAD ###################################//
+
+const admintoolsupload = multer.diskStorage({
+  destination: function (req, file, cb) {
+    fs.access(ADMIN_TOOL_PATH, fs.constants.F_OK, (err) => {
+      if (err) {
+        fs.mkdir(ADMIN_TOOL_PATH, { recursive: true }, (err) => {
+          if (err) {
+            console.error("Error creating directory:", err);
+            cb(err);
+          } else {
+            cb(null, ADMIN_TOOL_PATH);
+          }
+        });
+      } else {
+        cb(null, ADMIN_TOOL_PATH);
+      }
+    });
+  },
+  filename: function (req, file, cb) {
+    const uniqueFilename = `${Date.now()}${Math.random()
+      .toString()
+      .slice(15)}${path.extname(file.originalname)}`;
+    cb(null, uniqueFilename);
+  }
+});
+
+const filterAdminToolsFile = function (req, file, cb) {
+  try {
+    const allowedFileTypes = /xlsx/;
+    const mimeTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+    ];
+
+    const extname = allowedFileTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = mimeTypes.includes(file.mimetype);
+
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      const error = new Error("Only XLSX file are allowed!");
+      error.status = 400;
+      return cb(error);
+    }
+  } catch (err) {
+    console.error("Error in fileFilter function", err.message);
+    return cb(err);
+  }
+};
+
+module.exports.uploadadmintoolsdetails = multer({
+  storage: admintoolsupload,
+  fileFilter: filterAdminToolsFile,
+  limits: {
+    fileSize: 3 * 1024 * 1024, // 3MB
+    files: 1,
   },
 });
