@@ -66,4 +66,14 @@ module.exports = function(app) {
         [authJwt.verifyToken],
         controller.deleteUserByAdminById,
   );
+
+    app.put('/api/users/addRole/:userId',
+        [authJwt.verifyToken],
+        controller.addRoleToUser,
+    );
+
+    app.put('/api/users/setRole/:userId',
+        [authJwt.verifyToken],
+        controller.setRoleToUser,
+    );
 };

@@ -12,6 +12,11 @@ const SystemModule = db.systemModules;
 const Op = db.Sequelize.Op;
 
 const jwt = require('jsonwebtoken');
+const sequelize = db.sequelize;
+const logErrorToFile = require('../logger');
+const Sequelize = db.Sequelize;
+const regTypes = ['B2C','Business','Freelancer'];
+
 
 
 /**
@@ -22,25 +27,28 @@ const jwt = require('jsonwebtoken');
  */
 
 exports.signup = async (req, res) => {
-  const user = await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    country_code: req.body.country_code,
-    mobile_number: req.body.mobile_number,
-    city: req.body.city,
-    created_by: req.body.created_by,
-    updated_by: req.body.updated_by,
-    // password: bcrypt.hashSync(req.body.password, 8)
-  });
-  if (user) {
+  let transaction;
+  try {
+    transaction = await sequelize.transaction();
+
+    const user = await User.create({
+      name: req.body.name,
+      email: req.body.email,
+      country_code: req.body.country_code,
+      mobile_number: req.body.mobile_number,
+      city: req.body.city,
+      created_by: req.body.created_by,
+      updated_by: req.body.updated_by,
+    }, { transaction });
+
     const registration = await Registration.create({
       name: req.body.name,
       city: req.body.city,
-      registration_type: req.body.registration_type || 1,
+      registration_type: req.body.registration_type,
       userId: user.id,
       created_by: req.body.created_by,
       updated_by: req.body.updated_by,
-    });
+    }, { transaction });
 
     if (req.body.roles) {
       const roles = await Role.findAll({
@@ -50,48 +58,75 @@ exports.signup = async (req, res) => {
           },
         },
       });
-      await user.setRoles(roles);
+
+      await user.setRoles(roles, { transaction });
     } else {
-      await user.setRoles([1]);
+      if (req.body.registration_type) {
+        let role = [];
+        if (req.body.registration_type == 3) {
+          role.push(regTypes[2]);
+        }
+        else if (req.body.registration_type == 2) {
+          role.push(regTypes[1]);
+        }
+        else if (req.body.registration_type == 1) {
+          role.push(regTypes[0]);
+        }
+        const roles = await Role.findAll({
+          where: {
+            name: {
+              [Op.or]: role,
+            },
+          },
+        });
+        await user.setRoles(roles, { transaction });
+      }
+      else{
+        let role = [];
+        role.push(regTypes[0]);
+        const roles = await Role.findAll({
+          where: {
+            name: {
+              [Op.or]: role,
+            },
+          },
+        });
+        await user.setRoles(roles, { transaction });
+      }
+    }
+    let expiresIn = 259200; // Default 3 days for non-'B2C' roles
+    const roleOfUser = await user.getRoles({ transaction });
+    const roleNames = roleOfUser.map((role) => role.dataValues.name);
+    if (roleNames.includes(regTypes[0])) {
+      expiresIn = 86400; // 24 hours for 'B2C' role
     }
 
-    const roleOfUser = await user.getRoles();
-        const roleNames = roleOfUser.map((role) => role.dataValues.name);
-        let token;
-            if(roleNames.includes('user')) {
-              token = jwt.sign({ id: user.id },
-                config.secret,
-                {
-                  algorithm: 'HS256',
-                  allowInsecureKeySizes: true,
-                  expiresIn: 86400, // 24 hours
-                });
-            }else{
-              token = jwt.sign({ id: user.id },
-                config.secret,
-                {
-                  algorithm: 'HS256',
-                  allowInsecureKeySizes: true,
-                  expiresIn: 259200, // 3 days
-                });
-            }
-
-    const authorities = [];
-    user.getRoles().then((roles) => {
-      for (let i = 0; i < roles.length; i++) {
-        authorities.push('ROLE_' + roles[i].name.toUpperCase());
-      }
-      return res.status(serviceResponse.saveSuccess).send({
-        user: user,
-        roles: authorities,
-        accessToken: token,
-        registration: registration,
-      });
+    const token = jwt.sign({ id: user.id }, config.secret, {
+      algorithm: 'HS256',
+      allowInsecureKeySizes: true,
+      expiresIn,
     });
-  } else {
-    return res.status(serviceResponse.badRequest).send({ message: serviceResponse.errorCreatingRecord });
+
+    const authorities = roleNames.map((role) => `ROLE_${role.toUpperCase()}`);
+
+    await transaction.commit();
+
+    return res.status(serviceResponse.saveSuccess).send({
+      user,
+      roles: authorities,
+      accessToken: token,
+      registration,
+    });
+  } catch (err) {
+    if (transaction) await transaction.rollback();
+    logErrorToFile.logErrorToFile(err, 'auth.controller', 'signup');
+    if (err instanceof Sequelize.Error) {
+      return res.status(serviceResponse.badRequest).json({ error: err.message });
+    }
+    return res.status(serviceResponse.internalServerError).json({ error: serviceResponse.internalServerErrorMessage });
   }
 };
+
 
 /**
  * Controller function for get business details and sign-in.
