@@ -7,6 +7,7 @@ const Op = db.Sequelize.Op;
 const logErrorToFile = require('../logger');
 const serviceResponse = require('../config/serviceResponse');
 const sequelize  = db.sequelize;
+const roleTypes = ['B2C','Business','Freelancer'];
 
 /**
  * Update user details in the database.
@@ -304,7 +305,9 @@ module.exports.userCreateByAdmin = async function(req, res) {
 module.exports.updateUserByAdminById = async function(req, res) {
   try {
     const id = req.params.id;
-    const user = await User.findByPk(id);
+    const user = await User.findByPk(id, {
+      include: Role
+    });
     if(!user) {
       return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
     }
@@ -319,6 +322,10 @@ module.exports.updateUserByAdminById = async function(req, res) {
     user.created_by = created_by || user.created_by;
     user.updated_by = updated_by || user.updated_by;
     if (roles) {
+      const existingRoles = user.roles.map(role => role.name);
+      if (existingRoles.includes(roleTypes[1]) || existingRoles.includes(roleTypes[2])) {
+        return res.status(serviceResponse.badRequest).json({ error: 'User already has Business or Freelancer role' });
+      }
       const rolesRecord = await Role.findAll({
         where: {
           name: {
@@ -431,9 +438,16 @@ module.exports.setRoleToUser = async function(req, res) {
   try{
     const id = req.params.userId;
     const {roles} = req.body; 
-    const user = await User.findByPk(id);
+    const user = await User.findByPk(id, {
+      include: Role
+    });
     if(!user){
       return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
+    }
+
+    const existingRoles = user.roles.map(role => role.name);
+    if (existingRoles.includes(roleTypes[1]) || existingRoles.includes(roleTypes[2])) {
+      return res.status(serviceResponse.badRequest).json({ error: 'User already has Business or Freelancer role' });
     }
 
     const rolesRecord = await Role.findAll({
@@ -446,7 +460,13 @@ module.exports.setRoleToUser = async function(req, res) {
     if (rolesRecord.length === 0) {
       return res.status(serviceResponse.notFound).json({ error: 'No Roles Found' });
     }
-    await user.setRoles(rolesRecord);
+
+    const b2cRole = user.roles.find(role => role.name === roleTypes[0]);
+    if (b2cRole) {
+      await user.removeRole(b2cRole);
+    }
+
+    await user.addRoles(rolesRecord);
     const updatedUser = await User.findByPk(id, {
       include: Role
     });

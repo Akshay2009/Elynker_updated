@@ -14,7 +14,7 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING(100),
         },
         order_quantity: {
-            type: Sequelize.NUMERIC(10, 2),
+            type: Sequelize.INTEGER,
         },
         location: {
             type: Sequelize.STRING(100),
