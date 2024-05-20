@@ -165,3 +165,181 @@
  *       '500':
  *           description: Internal Server Error
  */
+/**
+ * @swagger
+ * /api/widgets/single:
+ *   post:
+ *     summary: Create a single widget
+ *     tags: [Widgets]
+ *     parameters:
+ *       - name: x-access-token
+ *         in: header
+ *         description: Access token for authentication
+ *         required: true
+ *         schema:
+ *           type: string
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Widget'
+ *     responses:
+ *       '201':
+ *         description: Widget created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Widget'
+ *       '400':
+ *         description: Bad request
+ *       '401':
+ *         description: Unauthorized - Access token is missing or invalid
+ *       '500':
+ *         description: Internal Server Error
+ */
+/**
+ * @swagger
+ * /api/widgets/{id}:
+ *   put:
+ *     summary: Update widget by ID
+ *     tags: [Widgets]
+ *     parameters:
+ *       - name: x-access-token
+ *         in: header
+ *         description: Access token for authentication
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: id
+ *         in: path
+ *         description: Id of widget
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Widget'
+ *     responses:
+ *       '200':
+ *         description: Widget updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Widget'
+ *       '400':
+ *         description: Bad request
+ *       '401':
+ *         description: Unauthorized - Access token is missing or invalid
+ *       '404':
+ *         description: No Record found
+ *       '500':
+ *         description: Internal Server Error
+ */
+/**
+ * @swagger
+ * /api/widgets:
+ *   get:
+ *     summary: Get all widgets
+ *     tags: [Widgets]
+ *     parameters:
+ *       - name: x-access-token
+ *         in: header
+ *         description: Access token for authentication
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - name: page
+ *         in: query
+ *         description: Page for Pagination
+ *         schema:
+ *           type: integer
+ *       - name: pageSize
+ *         in: query
+ *         description: Page Size to show records on the Page for Pagination
+ *         schema:
+ *           type: integer
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Single widgets retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 totalRecords:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Widget'
+ *       '400':
+ *         description: Bad request
+ *       '401':
+ *         description: Unauthorized - Access token is missing or invalid
+ *       '500':
+ *         description: Internal Server Error
+ */
+/**
+ * @swagger
+ * /api/widgets/{id}:
+ *   delete:
+ *     summary: Delete widget by ID
+ *     tags: [Widgets]
+ *     parameters:
+ *       - name: x-access-token
+ *         in: header
+ *         description: Access token for authentication
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: id
+ *         in: path
+ *         description: Id of widget
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Widget deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Widget'
+ *       '400':
+ *         description: Bad request
+ *       '401':
+ *         description: Unauthorized - Access token is missing or invalid
+ *       '404':
+ *         description: No Record found
+ *       '500':
+ *         description: Internal Server Error
+ */

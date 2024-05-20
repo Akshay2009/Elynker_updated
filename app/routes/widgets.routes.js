@@ -18,12 +18,36 @@ module.exports = function (app) {
 
   app.get("/api/widgets", /*[authJwt.verifyToken]*/ Widgets.getWidgets);
 
+  // /**
+  //  * Endpoint to update widgets details--
+  //  * @param {String} '/api/widgets' - API endpoint path.
+  //  * @param {Function[]} [authJwt.verifyToken],
+  //  * @param {Function} Widgets.updateWidgets, - Controller function to update widgets details--**/
+
+  // app.put("/api/widgets/:id", [authJwt.verifyToken], Widgets.updateWidgets);
+
   /**
-   * Endpoint to update widgets details--
-   * @param {String} '/api/widgets' - API endpoint path.
+   * Endpoint to save single widgets details--
+   * @param {String} '/api/widgets/single' - API endpoint path.
    * @param {Function[]} [authJwt.verifyToken],
-   * @param {Function} Widgets.updateWidgets, - Controller function to update widgets details--**/
+   * @param {Function} Widgets.saveSingleWidgets, - Controller function to save single widgets details--**/
 
-  app.put("/api/widgets/:id", [authJwt.verifyToken], Widgets.updateWidgets);
+  app.post("/api/widgets/single", [authJwt.verifyToken], Widgets.saveSingleWidgets);
 
+
+  /**
+   * Endpoint to update single widgets details--
+   * @param {String} '/api/widgets/single/:id' - API endpoint path.
+   * @param {Function[]} [authJwt.verifyToken],
+   * @param {Function} Widgets.updateSingleWidgets, - Controller function to update widgets details--**/
+
+  app.put("/api/widgets/:id", [authJwt.verifyToken], Widgets.updateSingleWidgets);
+
+  /**
+   * Endpoint to delete single widgets details--
+   * @param {String} '/api/widgets/single/:id' - API endpoint path.
+   * @param {Function[]} [authJwt.verifyToken],
+   * @param {Function} Widgets.deleteSingleWidgets, - Controller function to delete widgets details--**/
+
+  app.delete("/api/widgets/:id", [authJwt.verifyToken], Widgets.deleteSingleWidgets);
 };
