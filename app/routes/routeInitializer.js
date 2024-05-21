@@ -25,6 +25,7 @@ const vendorReviews = require('../routes/vendorReviews.routes');
 const systemModules = require('../routes/systemModules.routes');
 const rolePermissionRoutes = require('../routes/rolePermission.routes');
 const adminToolsRoutes = require('./adminTools.routes');
+const widgetDetailsRoutes = require('../routes/widgetDetails.route');
 
 module.exports = function initializeRoutes(app) {
   authRoutes(app);
@@ -53,4 +54,5 @@ module.exports = function initializeRoutes(app) {
   systemModules(app);
   rolePermissionRoutes(app);
   adminToolsRoutes(app);
+  widgetDetailsRoutes(app);
 };
