@@ -53,6 +53,7 @@ db.systemModules = require('../models/systemModules.model.js')(sequelize,Sequeli
 db.rolePermission = require('../models/rolePermission.model.js')(sequelize,Sequelize);
 db.adminTools = require('./adminTools.model.js')(sequelize,Sequelize);
 db.widgetDetails = require('../models/widgetDetails.model.js')(sequelize,Sequelize);
+db.personContacted = require('./personContacted.model.js')(sequelize,Sequelize);
 
 db.role.belongsToMany(db.user, {
   through: 'user_roles',
@@ -154,5 +155,9 @@ db.rolePermission.belongsTo(db.systemModules, {
 // associate widgets and widget_details as 1 to m
 db.widgets.hasMany(db.widgetDetails, { onDelete: 'CASCADE' });
 db.widgetDetails.belongsTo(db.widgets);
+
+// associate Registration and Person Contacts details as 1 to m
+db.registration.hasMany(db.personContacted, { onDelete: 'CASCADE' });
+db.personContacted.belongsTo(db.registration);
 
 module.exports = db;
