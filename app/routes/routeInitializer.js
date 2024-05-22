@@ -27,6 +27,7 @@ const rolePermissionRoutes = require('../routes/rolePermission.routes');
 const adminToolsRoutes = require('./adminTools.routes');
 const widgetDetailsRoutes = require('../routes/widgetDetails.route');
 const personsContacted = require('./personContacted.routes');
+const webComponents = require('./webComponents.routes');
 
 module.exports = function initializeRoutes(app) {
   authRoutes(app);
@@ -57,4 +58,5 @@ module.exports = function initializeRoutes(app) {
   adminToolsRoutes(app);
   widgetDetailsRoutes(app);
   personsContacted(app);
+  webComponents(app);
 };

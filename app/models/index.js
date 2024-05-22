@@ -54,6 +54,7 @@ db.rolePermission = require('../models/rolePermission.model.js')(sequelize,Seque
 db.adminTools = require('./adminTools.model.js')(sequelize,Sequelize);
 db.widgetDetails = require('../models/widgetDetails.model.js')(sequelize,Sequelize);
 db.personContacted = require('./personContacted.model.js')(sequelize,Sequelize);
+db.webComponents = require('./webComponents.model.js')(sequelize,Sequelize);
 
 db.role.belongsToMany(db.user, {
   through: 'user_roles',
