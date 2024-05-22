@@ -15,7 +15,20 @@ module.exports = function (app) {
 
   app.get(
     "/api/admin/tools",
-    [authJwt.verifyToken],
+    //[authJwt.verifyToken],
     controller.getAll
+  );
+
+
+  app.put(
+    "/api/admin/tools/:id",
+    [authJwt.verifyToken],
+    controller.update
+  );
+
+  app.delete(
+    "/api/admin/tools/:id",
+    [authJwt.verifyToken],
+    controller.delete
   );
 };

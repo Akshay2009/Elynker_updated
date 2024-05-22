@@ -10,13 +10,16 @@ module.exports = (sequelize, Sequelize) => {
       },
     },
     tools_icon_image: {
-      type: Sequelize.STRING,
+      type: Sequelize.TEXT,
     },
     tools_cover_image: {
-      type: Sequelize.STRING,
+      type: Sequelize.TEXT,
     },
     is_active: {
       type: Sequelize.BOOLEAN,
+    },
+    service_type: {
+      type: Sequelize.STRING(50),
     },
     created_by: {
       type: Sequelize.NUMERIC,

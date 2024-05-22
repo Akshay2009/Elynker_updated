@@ -18,4 +18,6 @@ module.exports = {
     registrationNotFound: 'No Registration Record With This Id',
     errorCreatingRecord: 'Error in Creating Record',
     noCategoryParentMessage: 'No Category found exist with this parent_id',
+    errorUpdatingMessage: 'Error in Updating Record',
+    errorDeletingMessage: 'Error in Deleting Record',
 };
