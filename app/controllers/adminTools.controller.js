@@ -69,7 +69,7 @@ module.exports.uploadXLSX = async (req, res, next) => {
     if (err instanceof db.Sequelize.Error) {
       return res
         .status(serviceResponse.badRequest)
-        .json({ error: err.message + " " + err.errors[0].message });
+        .json({ error: err.message  });
     }
     return res
       .status(serviceResponse.internalServerError)
@@ -105,12 +105,98 @@ module.exports.getAll = async (req, res, next) => {
     logErrorToFile.logErrorToFile(
       err,
       "adminTools.controller",
-      "uploadXLSX"
+      "getAll"
     );
     if (err instanceof db.Sequelize.Error) {
       return res
         .status(serviceResponse.badRequest)
-        .json({ error: err.message + " " + err.errors[0].message });
+        .json({ error: err.message });
+    }
+    return res
+      .status(serviceResponse.internalServerError)
+      .json({
+        error: serviceResponse.internalServerErrorMessage + " " + err.message,
+      });
+  }
+};
+
+
+module.exports.update = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const existingRecord = await adminTools.findByPk(id);
+    const { tools_title, tools_icon_image, tools_cover_image, is_active, service_type,created_by, updated_by } = req.body;
+    if(!existingRecord){
+      return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
+    }
+    const [row, record] = await adminTools.update({
+      tools_title,
+      tools_icon_image,
+      tools_cover_image,
+      is_active,
+      service_type,
+      created_by,
+      updated_by,
+    }, {
+      where: {
+        id: id,
+      },
+      returning: true,
+    });
+    if (row) {
+      return res.status(serviceResponse.ok).json({ message: serviceResponse.updatedMessage, data: record[0] });
+    } else {
+      return res.status(serviceResponse.badRequest).json({ error: serviceResponse.errorUpdatingMessage });
+    }
+
+  } catch (err) {
+    logErrorToFile.logErrorToFile(
+      err,
+      "adminTools.controller",
+      "update"
+    );
+    if (err instanceof db.Sequelize.Error) {
+      return res
+        .status(serviceResponse.badRequest)
+        .json({ error: err.message });
+    }
+    return res
+      .status(serviceResponse.internalServerError)
+      .json({
+        error: serviceResponse.internalServerErrorMessage + " " + err.message,
+      });
+  }
+};
+
+
+module.exports.delete = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const existingRecord = await adminTools.findByPk(id);
+    if(!existingRecord){
+      return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
+    }
+    const row = await adminTools.destroy({
+      where: {
+        id: id,
+      },
+    });
+    if (row) {
+      return res.status(serviceResponse.ok).json({ message: serviceResponse.deletedMessage, data: existingRecord });
+    } else {
+      return res.status(serviceResponse.badRequest).json({ error: serviceResponse.errorDeletingMessage });
+    }
+
+  } catch (err) {
+    logErrorToFile.logErrorToFile(
+      err,
+      "adminTools.controller",
+      "delete"
+    );
+    if (err instanceof db.Sequelize.Error) {
+      return res
+        .status(serviceResponse.badRequest)
+        .json({ error: err.message });
     }
     return res
       .status(serviceResponse.internalServerError)
