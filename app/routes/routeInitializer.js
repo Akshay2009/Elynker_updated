@@ -28,7 +28,7 @@ const adminToolsRoutes = require('./adminTools.routes');
 const widgetDetailsRoutes = require('../routes/widgetDetails.route');
 const personsContacted = require('./personContacted.routes');
 const webComponents = require('./webComponents.routes');
-
+const jobsRoutes = require('./jobs.routes');
 module.exports = function initializeRoutes(app) {
   authRoutes(app);
   userRoutes(app);
@@ -59,4 +59,5 @@ module.exports = function initializeRoutes(app) {
   widgetDetailsRoutes(app);
   personsContacted(app);
   webComponents(app);
+  jobsRoutes(app);
 };

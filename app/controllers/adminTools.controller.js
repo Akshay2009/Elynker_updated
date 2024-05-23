@@ -46,6 +46,7 @@ module.exports.uploadXLSX = async (req, res, next) => {
         "tools_icon_image",
         "tools_cover_image",
         "is_active",
+        "service_type",
       ], // Adjust the field names you want to update
     });
 

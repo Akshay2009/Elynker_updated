@@ -55,6 +55,7 @@ db.adminTools = require('./adminTools.model.js')(sequelize,Sequelize);
 db.widgetDetails = require('../models/widgetDetails.model.js')(sequelize,Sequelize);
 db.personContacted = require('./personContacted.model.js')(sequelize,Sequelize);
 db.webComponents = require('./webComponents.model.js')(sequelize,Sequelize);
+db.jobs = require('./jobs.model.js')(sequelize,Sequelize);
 
 db.role.belongsToMany(db.user, {
   through: 'user_roles',
@@ -160,5 +161,21 @@ db.widgetDetails.belongsTo(db.widgets);
 // associate Registration and Person Contacts details as 1 to m
 db.registration.hasMany(db.personContacted, { onDelete: 'CASCADE' });
 db.personContacted.belongsTo(db.registration);
+
+// associate Registration and Jobs details as 1 to m
+db.registration.hasMany(db.jobs, { onDelete: 'CASCADE' });
+db.jobs.belongsTo(db.registration);
+
+
+// associate category and job as many to many
+db.jobs.belongsToMany(db.category, {
+  through: 'jobs_category',
+  onDelete: 'CASCADE',
+});
+db.category.belongsToMany(db.jobs, {
+  through: 'jobs_category',
+  onDelete: 'CASCADE',
+});
+
 
 module.exports = db;
