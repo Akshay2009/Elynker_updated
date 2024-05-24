@@ -15,6 +15,9 @@ module.exports = (sequelize, Sequelize) => {
     job_location: {
       type: Sequelize.STRING(200),
     },
+    salary_offered: {
+      type: Sequelize.NUMERIC(10, 2),
+    },
     created_by: {
       type: Sequelize.NUMERIC,
     },

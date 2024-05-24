@@ -34,6 +34,10 @@
  *               job_location:
  *                 type: string
  *                 description: Job location
+ *               salary_offered:
+ *                 type: number
+ *                 format: float
+ *                 description: Salary offered for the job
  *               created_by:
  *                 type: number
  *                 description: ID of the creator
@@ -49,6 +53,7 @@
  *               - description
  *               - min_experience
  *               - job_location
+ *               - salary_offered
  *               - created_by
  *               - updated_by
  *               - registrationId
@@ -66,6 +71,7 @@
  *                 description: "Develop and maintain software"
  *                 min_experience: 2
  *                 job_location: "Remote"
+ *                 salary_offered: 60000.00
  *                 created_by: 1
  *                 updated_by: 1
  *                 registrationId: 123
@@ -112,6 +118,7 @@
  *                   description: "Develop and maintain software"
  *                   min_experience: 2
  *                   job_location: "Remote"
+ *                   salary_offered: 60000.00
  *                   created_by: 1
  *                   updated_by: 1
  *                   registrationId: 123
@@ -160,6 +167,7 @@
  *                   description: "Develop and maintain software"
  *                   min_experience: 2
  *                   job_location: "Remote"
+ *                   salary_offered: 60000.00
  *                   created_by: 1
  *                   updated_by: 1
  *                   registrationId: 123
@@ -204,6 +212,7 @@
  *                 description: "Develop and maintain software"
  *                 min_experience: 2
  *                 job_location: "Remote"
+ *                 salary_offered: 60000.00
  *                 created_by: 1
  *                 updated_by: 1
  *                 registrationId: 123
@@ -250,6 +259,10 @@
  *               job_location:
  *                 type: string
  *                 description: Job location
+ *               salary_offered:
+ *                 type: number
+ *                 format: float
+ *                 description: Salary offered for the job
  *               created_by:
  *                 type: number
  *                 description: ID of the creator
@@ -275,6 +288,7 @@
  *                 description: "Develop and maintain software"
  *                 min_experience: 2
  *                 job_location: "Remote"
+ *                 salary_offered: 60000.00
  *                 created_by: 1
  *                 updated_by: 1
  *                 registrationId: 123
@@ -318,6 +332,7 @@
  *                 description: "Develop and maintain software"
  *                 min_experience: 2
  *                 job_location: "Remote"
+ *                 salary_offered: 60000.00
  *                 created_by: 1
  *                 updated_by: 1
  *                 registrationId: 123
