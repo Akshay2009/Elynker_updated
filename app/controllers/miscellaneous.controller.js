@@ -22,6 +22,8 @@ const CARD_IMAGE_PATH = path.join(
   process.env.CARD_IMAGE_PATH
 );
 const vendorReviews = db.vendorReviews;
+const QRCode = require('qrcode');
+const { log } = require('console');
 
 /**
  *Endpoint to get filter vendors details based on type location category rating -----
@@ -430,8 +432,31 @@ module.exports.getVendorByRegId = async function(req, res) {
 
 module.exports.cardImageUpload = async function (req, res) {
   try {
-    const { posted_by } = req.body;
+    const { registrationId,posted_by } = req.body;
     let cardImage;
+    if(!registrationId){
+        return res.status(serviceResponse.badRequest).json({ error: 'registrationId not provided'});
+    }
+    const regRecord = await Registration.findByPk(registrationId);
+    if(!regRecord){
+        if(req.files["image"]){
+            fs.unlinkSync(path.join(__dirname, '../..', CARD_IMAGE_PATH, '/', req.files['image'][0].filename));
+        }
+        return res.status(serviceResponse.badRequest).json({ error: serviceResponse.registrationNotFound });
+    }
+    const existingCard = await CardSharing.findOne({
+        where: {
+            registrationId: registrationId,
+        }
+    });
+    if(existingCard){
+        if(req.files["image"]){
+            fs.unlinkSync(path.join(__dirname, '../..', CARD_IMAGE_PATH, '/', req.files['image'][0].filename));
+        }
+        const stringdata = JSON.stringify(existingCard)
+        const qrImage = await QRCode.toDataURL(stringdata);
+        return res.status(serviceResponse.ok).send(qrImage);
+    }
     if (req.files!==undefined && req.files["image"]) {
       cardImage = req.files["image"];
     } else {
@@ -439,20 +464,21 @@ module.exports.cardImageUpload = async function (req, res) {
         .status(serviceResponse.badRequest)
         .json({ error: "Image not provided" });
     }
+    
 
     if (cardImage && cardImage.length > 0) {
         const imageUrl = req.protocol + "://" + req.get("host") + CARD_IMAGE_PATH.replace(/\\/g, '/') + "/" + cardImage[0].filename;
       const record = await CardSharing.create({
         image_url: imageUrl, // Corrected to image_url
         image: cardImage[0].filename ,
+        registrationId: registrationId,
         posted_by: posted_by,
       });
 
       if (record) {
-        return res.status(serviceResponse.saveSuccess).json({
-          message: serviceResponse.createdMessage,
-          data: record // Including imageUrl in data
-        });
+        const stringdata = JSON.stringify(record)
+        const qrImage = await QRCode.toDataURL(stringdata);
+        return res.status(serviceResponse.saveSuccess).send(`<img src="${qrImage}">`);
       } else {
         return res
           .status(serviceResponse.badRequest)
@@ -460,9 +486,10 @@ module.exports.cardImageUpload = async function (req, res) {
       }
     }
   } catch (error) {
+    logErrorToFile.logErrorToFile(error, 'miscellaneous.controller', 'cardImageUpload');
     return res
       .status(500)
-      .json({ error:serviceResponse.internalServerError + error.message });
+      .json({ error:serviceResponse.internalServerError+" " + error.message });
   }
 };
 
@@ -595,3 +622,31 @@ module.exports.getVendorFreelancerByRegId = async function(req, res) {
         return res.status(serviceResponse.internalServerError).json({ error: 'Internal server error' });
     }
 }
+
+
+module.exports.getcardImageUploaded = async function (req, res) {
+    try {
+        const { fieldName, fieldValue } = req.params;
+        if (!CardSharing.rawAttributes[fieldName]) {
+            return res.status(serviceResponse.badRequest).json({ error: serviceResponse.fieldNotExistMessage });
+        }
+        const records = await CardSharing.findOne({
+            where: {
+                [fieldName]: fieldValue,
+            },
+        });
+        if (records) {
+            const qrImage = await QRCode.toDataURL(records.image_url);
+            return res.status(serviceResponse.ok).send(`<img src="${qrImage}">`);
+        } else {
+            return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
+        }
+    } catch (err) {
+        logErrorToFile.logErrorToFile(err, 'miscellaneous.controller', 'getcardImageUploaded');
+        if (err instanceof Sequelize.Error) {
+            return res.status(serviceResponse.badRequest).json({ error: err.message });
+        }
+        return res.status(serviceResponse.internalServerError).json({ error: serviceResponse.internalServerErrorMessage });
+    }
+};
+  
