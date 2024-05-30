@@ -73,4 +73,10 @@ module.exports = function (app) {
     //[authJwt.verifyToken],
     filterVendors.getVendorFreelancerByRegId
   );
+
+  app.get(
+    "/api/card/imageUpload",
+    //[authJwt.verifyToken],
+    filterVendors.getcardImageUploaded
+  );
 };

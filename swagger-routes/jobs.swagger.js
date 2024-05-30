@@ -345,3 +345,150 @@
  *       '500':
  *         description: Internal server error
  */
+/**
+ * @swagger
+ * /api/jobs/job/{title}:
+ *   get:
+ *     summary: Get job details by title
+ *     tags: [Jobs]
+ *     parameters:
+ *       - in: path
+ *         name: title
+ *         description: Title of the job to search
+ *         required: true
+ *         schema:
+ *           type: string
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Job details fetched successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Job details fetched successfully
+ *               data:
+ *                 - id: 1
+ *                   title: "Software Engineer"
+ *                   category_id: "1"
+ *                   description: "Develop and maintain software"
+ *                   min_experience: 2
+ *                   job_location: "Remote"
+ *                   salary_offered: 60000.00
+ *                   created_by: 1
+ *                   updated_by: 1
+ *                   registrationId: 123
+ *                   categories:
+ *                     - id: 1
+ *                       title: "Engineering"
+ *                   registration:
+ *                     id: 1
+ *                     city: "San Francisco"
+ *                     state: "CA"
+ *                     whatsapp_number: "1234567890"
+ *                     user:
+ *                       id: 1
+ *                       country_code: "+1"
+ *                       mobile_number: "9876543210"
+ *               categories:
+ *                 - "Engineering"
+ *                 - "Management"
+ *               locations:
+ *                 - "Remote"
+ *                 - "New York"
+ *               experience:
+ *                 - 2
+ *                 - 5
+ *       '401':
+ *         description: Unauthorized
+ *       '404':
+ *         description: Job not found
+ *       '500':
+ *         description: Internal server error
+ *
+ * /api/jobs/listing/{title}:
+ *   get:
+ *     summary: Get filtered job listings by title
+ *     tags: [Jobs]
+ *     parameters:
+ *       - in: path
+ *         name: title
+ *         description: Title of the job to search
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: categories
+ *         description: Comma-separated list of categories to filter by
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: locations
+ *         description: Comma-separated list of locations to filter by
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: experiences
+ *         description: Comma-separated list of experiences to filter by
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: sortBy
+ *         description: Field to sort by (salary, createdAt)
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: sortOrder
+ *         description: Sort order (ASC, DESC)
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         description: Page number for pagination
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: pageSize
+ *         description: Number of records per page
+ *         schema:
+ *           type: integer
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: List of jobs fetched successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Jobs fetched successfully
+ *               totalRecords: 100
+ *               data:
+ *                 - id: 1
+ *                   title: "Software Engineer"
+ *                   category_id: "1"
+ *                   description: "Develop and maintain software"
+ *                   min_experience: 2
+ *                   job_location: "Remote"
+ *                   salary_offered: 60000.00
+ *                   created_by: 1
+ *                   updated_by: 1
+ *                   registrationId: 123
+ *                   categories:
+ *                     - id: 1
+ *                       title: "Engineering"
+ *                   registration:
+ *                     id: 1
+ *                     city: "San Francisco"
+ *                     state: "CA"
+ *                     whatsapp_number: "1234567890"
+ *                     user:
+ *                       id: 1
+ *                       country_code: "+1"
+ *                       mobile_number: "9876543210"
+ *       '401':
+ *         description: Unauthorized
+ *       '404':
+ *         description: No records found
+ *       '500':
+ *         description: Internal server error
+ */

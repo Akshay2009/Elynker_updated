@@ -22,6 +22,10 @@ const CARD_IMAGE_PATH = path.join(
   process.env.CARD_IMAGE_PATH
 );
 const vendorReviews = db.vendorReviews;
+const QRCode = require('qrcode');
+const { log } = require('console');
+const config = require('../config/auth.config');
+const crypto = require('crypto');
 
 /**
  *Endpoint to get filter vendors details based on type location category rating -----
@@ -430,8 +434,27 @@ module.exports.getVendorByRegId = async function(req, res) {
 
 module.exports.cardImageUpload = async function (req, res) {
   try {
-    const { posted_by } = req.body;
+    const algorithm = config.algorithm;
+    const secretKey = config.secretKey; // it should be 32 long character
+    const iv = crypto.randomBytes(config.iv);
+    const { registrationId,posted_by } = req.body;
     let cardImage;
+    if(!registrationId){
+        return res.status(serviceResponse.badRequest).json({ error: 'registrationId not provided'});
+    }
+    const regRecord = await Registration.findByPk(registrationId);
+    if(!regRecord){
+        if(req.files["image"]){
+            fs.unlinkSync(path.join(__dirname, '../..', CARD_IMAGE_PATH, '/', req.files['image'][0].filename));
+        }
+        return res.status(serviceResponse.badRequest).json({ error: serviceResponse.registrationNotFound });
+    }
+    const existingCard = await CardSharing.findOne({
+        where: {
+            registrationId: registrationId,
+        }
+    });
+    
     if (req.files!==undefined && req.files["image"]) {
       cardImage = req.files["image"];
     } else {
@@ -439,20 +462,33 @@ module.exports.cardImageUpload = async function (req, res) {
         .status(serviceResponse.badRequest)
         .json({ error: "Image not provided" });
     }
+    if(existingCard){
+        if(existingCard.image){
+            fs.unlinkSync(path.join(__dirname, '../..', CARD_IMAGE_PATH, '/', existingCard.image));
+        }
+        await existingCard.destroy();
+    }
+    
 
     if (cardImage && cardImage.length > 0) {
         const imageUrl = req.protocol + "://" + req.get("host") + CARD_IMAGE_PATH.replace(/\\/g, '/') + "/" + cardImage[0].filename;
       const record = await CardSharing.create({
         image_url: imageUrl, // Corrected to image_url
         image: cardImage[0].filename ,
+        registrationId: registrationId,
         posted_by: posted_by,
       });
 
       if (record) {
-        return res.status(serviceResponse.saveSuccess).json({
-          message: serviceResponse.createdMessage,
-          data: record // Including imageUrl in data
-        });
+        const imageUrl = record.image_url;
+        let cipher = crypto.createCipheriv(algorithm, Buffer.from(secretKey), iv);
+        let encrypted = cipher.update(imageUrl, 'utf8', 'hex');
+        encrypted += cipher.final('hex');
+        const encryptedImageUrl = `${iv.toString('hex')}:${encrypted}`;
+
+        const fullUrl = `${config.redirectUrl}?data=${encodeURIComponent(encryptedImageUrl)}`;
+        const url = await QRCode.toDataURL(fullUrl);
+        return res.send(`<img src="${url}" alt="QR Code"><br>`);
       } else {
         return res
           .status(serviceResponse.badRequest)
@@ -460,9 +496,10 @@ module.exports.cardImageUpload = async function (req, res) {
       }
     }
   } catch (error) {
+    logErrorToFile.logErrorToFile(error, 'miscellaneous.controller', 'cardImageUpload');
     return res
       .status(500)
-      .json({ error:serviceResponse.internalServerError + error.message });
+      .json({ error:serviceResponse.internalServerError+" " + error.message });
   }
 };
 
@@ -595,3 +632,41 @@ module.exports.getVendorFreelancerByRegId = async function(req, res) {
         return res.status(serviceResponse.internalServerError).json({ error: 'Internal server error' });
     }
 }
+
+
+module.exports.getcardImageUploaded = async function (req, res) {
+    try {
+        const maxLimit = 50;
+        let { page, pageSize } = req.query;
+        page = page ? page : 1;
+        let offset = 0;
+        if (page && pageSize) {
+            pageSize = pageSize <= maxLimit ? pageSize : maxLimit;
+            offset = (page - 1) * pageSize;
+        }
+
+        const { count, rows } = await CardSharing.findAndCountAll({
+            limit: pageSize,
+            offset: offset,
+            order: [["id", "ASC"]],
+        });
+        if (count > 0) {
+            return res.status(serviceResponse.ok).json({
+                message: serviceResponse.getMessage,
+                totalRecords: count,
+                data: rows,
+            });
+        } else {
+            return res
+                .status(serviceResponse.notFound)
+                .json({ error: serviceResponse.errorNotFound });
+        }
+    } catch (err) {
+        logErrorToFile.logErrorToFile(err, 'miscellaneous.controller', 'getcardImageUploaded');
+        if (err instanceof Sequelize.Error) {
+            return res.status(serviceResponse.badRequest).json({ error: err.message });
+        }
+        return res.status(serviceResponse.internalServerError).json({ error: serviceResponse.internalServerErrorMessage });
+    }
+};
+  

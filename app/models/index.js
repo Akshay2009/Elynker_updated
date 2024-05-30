@@ -177,5 +177,9 @@ db.category.belongsToMany(db.jobs, {
   onDelete: 'CASCADE',
 });
 
+// associate user and registration as 1:1
+db.registration.hasOne(db.cardSharing, { onDelete: 'CASCADE' });
+db.cardSharing.belongsTo(db.registration);
+
 
 module.exports = db;

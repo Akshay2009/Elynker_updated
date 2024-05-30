@@ -51,4 +51,9 @@ module.exports = function (app) {
    * @param {Function} controller.saveJobs, - Controller function to get jobs details by search--**/
 
   app.get("/api/jobs/search/:fieldName/:fieldValue", controller.search);
+
+  app.get("/api/jobs/job/:title", controller.wholeJobsListing);
+
+  app.get("/api/jobs/listing/:title", controller.listing);
+
 };
