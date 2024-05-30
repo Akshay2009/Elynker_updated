@@ -245,6 +245,7 @@ module.exports.search = async function (req, res) {
       where: {
         [fieldName]: fieldValue,
       },
+      order: [['updatedAt', 'DESC']],
     });
     if (records.length > 0) {
       return res.status(serviceResponse.ok).json({ message: serviceResponse.getMessage, data: records });

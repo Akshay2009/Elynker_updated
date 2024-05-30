@@ -3,6 +3,7 @@ const Sequelize = db.Sequelize;
 const logErrorToFile = require("../logger");
 const serviceResponse = require("../config/serviceResponse");
 const Widgets = db.widgets;
+const widgetDetails = db.widgetDetails;
 
 //*********End point to create widgets details****************/
 module.exports.saveWidgets = async function (req, res) {
@@ -57,7 +58,10 @@ module.exports.getWidgets = async function (req, res) {
     const { count, rows } = await Widgets.findAndCountAll({
       limit: pageSize,
       offset: offset,
-      order: [["rank", "ASC"]],
+      order: [['updatedAt', 'DESC']],
+      include: {
+        model: widgetDetails,
+      },
     });
     if (count > 0) {
       return res.status(serviceResponse.ok).json({
