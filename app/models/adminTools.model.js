@@ -49,6 +49,12 @@ module.exports = (sequelize, Sequelize) => {
         },
       },
     },
+    benefits: {
+      type: Sequelize.TEXT,
+    },
+    partners: {
+      type: Sequelize.TEXT,
+    },
     created_by: {
       type: Sequelize.NUMERIC,
     },

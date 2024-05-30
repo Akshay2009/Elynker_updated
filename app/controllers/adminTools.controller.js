@@ -4,6 +4,7 @@ const serviceResponse = require("../config/serviceResponse");
 const fs = require("fs");
 const adminTools = db.adminTools;
 var XLSX = require("xlsx");
+const { log } = require("sharp/lib/libvips");
 
 //Post and update data from excel sheet----------
 
@@ -39,23 +40,40 @@ module.exports.uploadXLSX = async (req, res, next) => {
     }
 
     // Ensure parent_id is not null, if null set to 0
-    for(let i=0;i<jsonData.length;i++){
+    for (let i = 0; i < jsonData.length; i++) {
       const row = jsonData[i];
+      if (jsonData[i]["partners"]) {
+        const stringToValidate = validateImageUrlTitleString(
+          jsonData[i]["partners"]
+        );
+        row.partners = stringToValidate;
+      }
+
       if (row.parent_id == null) {
         row.parent_id = 0;
       }
       if (row.id === row.parent_id) {
         fs.unlinkSync(path);
         return res
-        .status(serviceResponse.badRequest)
-        .json({ error: `id and parent_id cannot be same`});
-        
+          .status(serviceResponse.badRequest)
+          .json({ error: `id and parent_id cannot be same` });
       }
     }
-   
+    function validateImageUrlTitleString(input) {
+      var finalInput = "";
+      var partners = input.toString().split(",");
+      partners.forEach((partner) => {
+        var partnerArr = partner.toString().split("::");
+        if (partnerArr.length > 1) {
+          finalInput += partner + ",";
+        }
+      });
+
+      return finalInput.toString().slice(0, -1);
+    }
 
     // Use bulkCreate with updateOnDuplicate option for child records
-    let records = await adminTools.bulkCreate( jsonData, {
+    let records = await adminTools.bulkCreate(jsonData, {
       updateOnDuplicate: [
         "parent_id",
         "title",
@@ -65,13 +83,15 @@ module.exports.uploadXLSX = async (req, res, next) => {
         "is_active",
         "service_type",
         "redirect_to",
+        "benefits",
+        "partners",
       ],
     });
 
     return res.status(200).json({
       success: true,
       message: jsonData.length + " rows added or updated in the database",
-      data: records
+      data: records,
     });
   } catch (err) {
     logErrorToFile.logErrorToFile(err, "adminTools.controller", "uploadXLSX");
@@ -138,6 +158,8 @@ module.exports.update = async (req, res, next) => {
       tools_cover_image,
       is_active,
       service_type,
+      benefits,
+      partners,
       created_by,
       updated_by,
     } = req.body;
@@ -155,6 +177,8 @@ module.exports.update = async (req, res, next) => {
         is_active,
         service_type,
         redirect_to,
+        benefits,
+        partners,
         created_by,
         updated_by,
       },
