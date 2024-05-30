@@ -56,6 +56,7 @@ db.widgetDetails = require('../models/widgetDetails.model.js')(sequelize,Sequeli
 db.personContacted = require('./personContacted.model.js')(sequelize,Sequelize);
 db.webComponents = require('./webComponents.model.js')(sequelize,Sequelize);
 db.jobs = require('./jobs.model.js')(sequelize,Sequelize);
+db.subscription = require('./subscription.model.js')(sequelize,Sequelize);
 
 db.role.belongsToMany(db.user, {
   through: 'user_roles',
@@ -176,6 +177,5 @@ db.category.belongsToMany(db.jobs, {
   through: 'jobs_category',
   onDelete: 'CASCADE',
 });
-
 
 module.exports = db;
