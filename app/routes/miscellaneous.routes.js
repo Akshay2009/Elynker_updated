@@ -75,7 +75,7 @@ module.exports = function (app) {
   );
 
   app.get(
-    "/api/card/imageUpload/search/:fieldName/:fieldValue",
+    "/api/card/imageUpload",
     //[authJwt.verifyToken],
     filterVendors.getcardImageUploaded
   );

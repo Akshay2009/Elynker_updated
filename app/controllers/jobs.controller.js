@@ -6,6 +6,8 @@ const { where } = require("sequelize");
 const Jobs = db.jobs;
 const Category = db.category;
 const Registration = db.registration;
+const Op = db.Sequelize.Op;
+const User = db.user;
 
 /**
  * Controller function to save jobs details---
@@ -380,3 +382,134 @@ module.exports.getById = async function (req, res) {
         .json({ error: serviceResponse.internalServerErrorMessage });
     }
   };
+
+module.exports.listing = async function (req, res) {
+  try {
+    const title = req.params.title;
+    const { categories, locations, experiences, sortBy, sortOrder } = req.query;
+    // Parse the query parameters
+    const parsedCategories = categories ? categories.split(',') : [];
+    const parsedLocations = locations ? locations.split(',') : [];
+    const parsedExperiences = experiences ? experiences.split(',').map(Number) : [];
+    const maxLimit = 50;
+    let { page, pageSize } = req.query;
+    page = page ? page : 1;
+    let offset = 0;
+    if (page && pageSize) {
+      pageSize = pageSize <= maxLimit ? pageSize : maxLimit;
+      offset = (page - 1) * pageSize;
+    }
+
+    const { count, rows } = await Jobs.findAndCountAll({
+      distinct: true,
+      limit: pageSize,
+      offset: offset,
+      where: {
+        title: { [Op.iLike]: `%${title}%` },
+        ...(parsedLocations.length > 0 && { job_location: { [Op.in]: parsedLocations } }),
+        ...(parsedExperiences.length > 0 && { min_experience: { [Op.in]: parsedExperiences } }),
+      },
+      include: [
+        {
+          model: Category,
+          where: parsedCategories.length > 0 ? { title: { [Op.in]: parsedCategories } } : {},
+          attributes: ['id', 'title'],
+          through: { attributes: [] }, // Remove join table attributes
+        },
+        {
+          model: Registration,
+          attributes: ['id', 'city', 'state','whatsapp_number'],
+          include: [
+            {
+              model: User,
+              attributes: ['id','country_code','mobile_number'],
+            },
+          ],
+        },
+      ],
+      order: [
+        // Specify the sorting order based on query parameters
+        sortBy === 'salary' ? ['salary_offered', sortOrder || 'ASC'] : null,
+        sortBy === 'createdAt' ? ['createdAt', sortOrder || 'ASC'] : null,
+      ].filter((item) => item !== null),
+    });
+    if (count > 0) {
+      return res.status(serviceResponse.ok).json({ message: serviceResponse.getMessage,totalRecords: count, data: rows });
+    } else {
+      return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
+    }
+  } catch (err) {
+    logErrorToFile.logErrorToFile(err, "Jobs.controller", "listing");
+    if (err instanceof Sequelize.Error) {
+      return res.status(serviceResponse.badRequest).json({ error: err.message });
+    }
+    return res.status(serviceResponse.internalServerError).json({ error: serviceResponse.internalServerErrorMessage });
+  }
+};
+
+module.exports.wholeJobsListing = async function (req, res) {
+  try {
+    const title = req.params.title;
+
+    const records = await Jobs.findAll({
+      distinct: true,
+      where: {
+        title: { [Op.iLike]: `%${title}%` },
+      },
+      include: [
+        {
+          model: Category,
+          attributes: ['id', 'title'],
+          through: { attributes: [] }, // Remove join table attributes
+        },
+        {
+          model: Registration,
+          attributes: ['id', 'city', 'state','whatsapp_number'],
+          include: [
+            {
+              model: User,
+              attributes: ['id','country_code','mobile_number'],
+            },
+          ],
+        },
+      ],
+    });
+    if (records.length > 0) {
+      // Initialize sets to store unique values
+      const uniqueCategories = new Set();
+      const uniqueLocations = new Set();
+      const uniqueExperience = new Set();
+
+      // Collect unique values
+      records.forEach(record => {
+        record.categories.forEach(category => {
+          uniqueCategories.add(category.title);
+        });
+        uniqueLocations.add(record.job_location);
+        uniqueExperience.add(record.min_experience);
+      });
+
+      // Convert sets to arrays
+      const uniqueCategoriesArray = Array.from(uniqueCategories);
+      const uniqueLocationsArray = Array.from(uniqueLocations);
+      const uniqueExperienceArray = Array.from(uniqueExperience);
+
+      // Send the response
+      return res.status(serviceResponse.ok).json({
+        message: serviceResponse.getMessage,
+        data: records,
+        categories: uniqueCategoriesArray,
+        locations: uniqueLocationsArray,
+        experience: uniqueExperienceArray
+      });
+    } else {
+      return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
+    }
+  } catch (err) {
+    logErrorToFile.logErrorToFile(err, "Jobs.controller", "wholeJobsListing");
+    if (err instanceof Sequelize.Error) {
+      return res.status(serviceResponse.badRequest).json({ error: err.message });
+    }
+    return res.status(serviceResponse.internalServerError).json({ error: serviceResponse.internalServerErrorMessage });
+  }
+};
