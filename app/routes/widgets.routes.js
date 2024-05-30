@@ -50,4 +50,6 @@ module.exports = function (app) {
    * @param {Function} Widgets.deleteSingleWidgets, - Controller function to delete widgets details--**/
 
   app.delete("/api/widgets/:id", [authJwt.verifyToken], Widgets.deleteSingleWidgets);
+
+  app.get('/api/widgets/mobile', Widgets.getWidgetsForMobile);
 };

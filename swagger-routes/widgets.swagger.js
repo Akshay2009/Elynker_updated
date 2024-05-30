@@ -343,3 +343,60 @@
  *       '500':
  *         description: Internal Server Error
  */
+/**
+ * @swagger
+ * /api/widgets/mobile:
+ *   get:
+ *     summary: Get widgets for mobile
+ *     tags: [Widgets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: x-access-token
+ *         in: header
+ *         description: Access token for authentication
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - name: page
+ *         in: query
+ *         description: Page for Pagination
+ *         schema:
+ *           type: integer
+ *       - name: pageSize
+ *         in: query
+ *         description: Page Size to show records on the Page for Pagination
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: Widgets for mobile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 totalRecords:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Widget'
+ *       '400':
+ *         description: Bad request
+ *       '401':
+ *         description: Unauthorized - Access token is missing or invalid
+ *       '404':
+ *         description: No Record found
+ *       '500':
+ *         description: Internal Server Error
+ */
+
+
+
+
+
+
+

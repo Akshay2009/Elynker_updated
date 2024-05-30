@@ -2,6 +2,7 @@ const db = require("../models");
 const Sequelize = db.Sequelize;
 const logErrorToFile = require("../logger");
 const serviceResponse = require("../config/serviceResponse");
+const { where } = require("sequelize");
 const Widgets = db.widgets;
 const widgetDetails = db.widgetDetails;
 
@@ -56,6 +57,7 @@ module.exports.getWidgets = async function (req, res) {
     }
 
     const { count, rows } = await Widgets.findAndCountAll({
+      distinct: true,
       limit: pageSize,
       offset: offset,
       order: [['updatedAt', 'DESC']],
@@ -296,6 +298,54 @@ module.exports.deleteSingleWidgets = async function (req, res) {
     }
   } catch (err) {
     logErrorToFile.logErrorToFile(err, "widgets.controller", "deleteSingleWidgets");
+    if (err instanceof Sequelize.Error) {
+      return res
+        .status(serviceResponse.badRequest)
+        .json({ error: err.message });
+    }
+    return res
+      .status(serviceResponse.internalServerError)
+      .json({ error: serviceResponse.internalServerErrorMessage });
+  }
+};
+
+//**************************************** */
+module.exports.getWidgetsForMobile = async function (req, res) {
+  try {
+    const maxLimit = 50;
+    let { page, pageSize } = req.query;
+    page = page ? page : 1;
+    let offset = 0;
+    if (page && pageSize) {
+      pageSize = pageSize <= maxLimit ? pageSize : maxLimit;
+      offset = (page - 1) * pageSize;
+    }
+
+    const { count, rows } = await Widgets.findAndCountAll({
+      distinct: true,
+      limit: pageSize,
+      offset: offset,
+      order: [['rank', 'ASC']],
+      where: {
+        is_active: true,
+      },
+      include: {
+        model: widgetDetails,
+      },
+    });
+    if (count > 0) {
+      return res.status(serviceResponse.ok).json({
+        message: serviceResponse.getMessage,
+        totalRecords: count,
+        data: rows,
+      });
+    } else {
+      return res
+        .status(serviceResponse.notFound)
+        .json({ error: serviceResponse.errorNotFound });
+    }
+  } catch (err) {
+    logErrorToFile.logErrorToFile(err, "widgets.controller", "getWidgetsForMobile");
     if (err instanceof Sequelize.Error) {
       return res
         .status(serviceResponse.badRequest)
