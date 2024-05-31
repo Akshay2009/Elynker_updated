@@ -20,10 +20,10 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.NUMERIC,
     },
     widget_type: {
-      type: Sequelize.ENUM("page", "tiles", "cards"),
+      type: Sequelize.ENUM("page", "tiles", "cards","fixed"),
       defaultValue: "page", // Default value should be one of the ENUM options
       validate: {
-        isIn: [["page", "tiles", "cards"]],
+        isIn: [["page", "tiles", "cards", "fixed"]],
       },
     },
     widget_color: {
