@@ -57,6 +57,7 @@ db.personContacted = require('./personContacted.model.js')(sequelize,Sequelize);
 db.webComponents = require('./webComponents.model.js')(sequelize,Sequelize);
 db.jobs = require('./jobs.model.js')(sequelize,Sequelize);
 db.subscription = require('./subscription.model.js')(sequelize,Sequelize);
+db.qrContacts = require('./qrContacts.model.js')(sequelize,Sequelize);
 
 db.role.belongsToMany(db.user, {
   through: 'user_roles',

@@ -30,6 +30,8 @@ const personsContacted = require('./personContacted.routes');
 const webComponents = require('./webComponents.routes');
 const jobsRoutes = require('./jobs.routes');
 const subscription = require('./subscription.routes');
+const qrContactsRoutes = require('./qrContacts.routes');
+
 module.exports = function initializeRoutes(app) {
   authRoutes(app);
   userRoutes(app);
@@ -62,4 +64,5 @@ module.exports = function initializeRoutes(app) {
   webComponents(app);
   jobsRoutes(app);
   subscription(app);
+  qrContactsRoutes(app);
 };

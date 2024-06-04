@@ -486,7 +486,7 @@ module.exports.cardImageUpload = async function (req, res) {
         encrypted += cipher.final('hex');
         const encryptedImageUrl = `${iv.toString('hex')}:${encrypted}`;
 
-        const fullUrl = `${config.redirectUrl}?data=${encodeURIComponent(encryptedImageUrl)}`;
+        const fullUrl = `${config.redirectUrl}?data=${encodeURIComponent(encryptedImageUrl)}?vendorId=${record.registrationId}`;
         const url = await QRCode.toDataURL(fullUrl);
         return res.send(`<img src="${url}" alt="QR Code"><br>`);
       } else {

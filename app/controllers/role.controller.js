@@ -5,6 +5,7 @@ const Sequelize = db.Sequelize;
 const logErrorToFile = require('../logger');
 const serviceResponse = require('../config/serviceResponse');
 const SystemModule = db.systemModules;
+const Op =  db.Sequelize.Op;
 
 
 /**
@@ -211,6 +212,12 @@ module.exports.getAll = async function (req, res) {
         }
     
         const { count, rows } = await Role.findAndCountAll({
+            where: {
+                name: {
+                    [Op.notIn]: ['B2C', 'Business', 'Freelancer']
+                }
+            },
+            distinct: true,
           limit: pageSize,
           offset: offset,
           order: [['id', 'ASC']],

@@ -32,10 +32,10 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING(500),
         },
         status: {
-            type: Sequelize.ENUM('pending', 'fulfilled', 'hold'),
+            type: Sequelize.ENUM('pending', 'fulfilled', 'hold','cancelled'),
             defaultValue: 'pending',
             validate: {
-                isIn: [['pending', 'fulfilled', 'hold']], // Ensures only 'pending' or 'fulfilled' or 'hold values are accepted
+                isIn: [['pending', 'fulfilled', 'hold','cancelled']], // Ensures only 'pending' or 'fulfilled' or 'hold values are accepted
             },
         },
         mobile_number: {

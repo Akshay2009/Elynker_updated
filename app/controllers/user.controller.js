@@ -305,7 +305,7 @@ module.exports.userCreateByAdmin = async function(req, res) {
 module.exports.updateUserByAdminById = async function(req, res) {
   try {
     const id = req.params.id;
-    const user = await User.findByPk(id, {
+    let user = await User.findByPk(id, {
       include: Role
     });
     if(!user) {
@@ -322,10 +322,13 @@ module.exports.updateUserByAdminById = async function(req, res) {
     user.created_by = created_by || user.created_by;
     user.updated_by = updated_by || user.updated_by;
     if (roles) {
-      const existingRoles = user.roles.map(role => role.name);
-      if (existingRoles.includes(roleTypes[1]) || existingRoles.includes(roleTypes[2])) {
-        return res.status(serviceResponse.badRequest).json({ error: 'User already has Business or Freelancer role' });
-      }
+      //const existingRoles = user.roles.map(role => role.name);
+      // if (existingRoles.includes(roleTypes[1]) || existingRoles.includes(roleTypes[2])) {
+      //   return res.status(serviceResponse.badRequest).json({ error: 'User already has Business or Freelancer role' });
+      // }
+
+      const businessRole = user.roles.find(role => role.name === roleTypes[1]);
+      const freelancerRole = user.roles.find(role => role.name === roleTypes[2]);
       const rolesRecord = await Role.findAll({
         where: {
           name: {
@@ -337,8 +340,17 @@ module.exports.updateUserByAdminById = async function(req, res) {
         return res.status(serviceResponse.notFound).json({ error: 'No Roles Found' });
       }
       await user.setRoles(rolesRecord);
+      if(businessRole){
+        await user.addRoles(businessRole);
+      }
+      if(freelancerRole){
+        await user.addRoles(freelancerRole);
+      }
     }    
     await user.save();
+    user = await User.findByPk(id, {
+      include: Role
+    });
     const authorities = [];
     //const updatedUser = await User.findByPk(id);
     const userRoles = await user.getRoles();
