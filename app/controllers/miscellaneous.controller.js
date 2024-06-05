@@ -434,9 +434,6 @@ module.exports.getVendorByRegId = async function(req, res) {
 
 module.exports.cardImageUpload = async function (req, res) {
   try {
-    const algorithm = config.algorithm;
-    const secretKey = config.secretKey; // it should be 32 long character
-    const iv = crypto.randomBytes(config.iv);
     const { registrationId,posted_by } = req.body;
     let cardImage;
     if(!registrationId){
@@ -480,13 +477,7 @@ module.exports.cardImageUpload = async function (req, res) {
       });
 
       if (record) {
-        const imageUrl = record.image_url;
-        let cipher = crypto.createCipheriv(algorithm, Buffer.from(secretKey), iv);
-        let encrypted = cipher.update(imageUrl, 'utf8', 'hex');
-        encrypted += cipher.final('hex');
-        const encryptedImageUrl = `${iv.toString('hex')}:${encrypted}`;
-
-        const fullUrl = `${config.redirectUrl}?data=${encodeURIComponent(encryptedImageUrl)}?vendorId=${record.registrationId}`;
+        const fullUrl = `${config.redirectUrl}?data=${record.image}?vendorId=${record.registrationId}`;
         const url = await QRCode.toDataURL(fullUrl);
         return res.send(`<img src="${url}" alt="QR Code"><br>`);
       } else {

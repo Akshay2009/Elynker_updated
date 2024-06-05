@@ -329,6 +329,7 @@ module.exports.updateUserByAdminById = async function(req, res) {
 
       const businessRole = user.roles.find(role => role.name === roleTypes[1]);
       const freelancerRole = user.roles.find(role => role.name === roleTypes[2]);
+      const b2cRole = user.roles.find(role => role.name === roleTypes[0]);
       const rolesRecord = await Role.findAll({
         where: {
           name: {
@@ -345,6 +346,9 @@ module.exports.updateUserByAdminById = async function(req, res) {
       }
       if(freelancerRole){
         await user.addRoles(freelancerRole);
+      }
+      if(b2cRole){
+        await user.addRoles(b2cRole);
       }
     }    
     await user.save();
