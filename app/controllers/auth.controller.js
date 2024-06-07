@@ -14,6 +14,7 @@ const Op = db.Sequelize.Op;
 const jwt = require('jsonwebtoken');
 const sequelize = db.sequelize;
 const logErrorToFile = require('../logger');
+const { where } = require('sequelize');
 const Sequelize = db.Sequelize;
 const regTypes = ['B2C','Business','Freelancer'];
 
@@ -232,3 +233,38 @@ exports.signin = async (req, res) => {
       return res.status(serviceResponse.internalServerError).send({ message: serviceResponse.internalServerErrorMessage });
     });
 };
+
+
+module.exports.checkRolesOfUserUsingMobileNumber = async function(req,res){
+  try{
+    const mobile_number = req.body.mobile_number;
+    const record = await User.findOne({
+      where: {
+        mobile_number: mobile_number,
+      },
+      attributes: ['id','mobile_number'],
+      include:[
+        {
+          model: Role,
+          attributes: ['id','name'],
+          through: { attributes: [], },
+        }
+      ]
+    });
+    if(!record){
+      return res.status(serviceResponse.notFound).json({ error: serviceResponse.errorNotFound });
+    }
+    const roles = record.roles.map(role => role.name);
+    const restrictedRoles = ["Business", "Freelancer", "B2C"]; // front end user will have either B2C, Business or Freelancer Role
+
+    let adminAccess = true;
+    if (roles.length === 1 && restrictedRoles.includes(roles[0])) { // check for front end user
+      adminAccess = false;
+    }
+    
+    return res.status(serviceResponse.ok).json({ admin_access: adminAccess  });
+
+  }catch(err){
+    return res.status(serviceResponse.internalServerError).json({ error: serviceResponse.internalServerErrorMessage+" "+err.message })
+  }
+}

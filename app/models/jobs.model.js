@@ -18,6 +18,13 @@ module.exports = (sequelize, Sequelize) => {
     salary_offered: {
       type: Sequelize.NUMERIC(10, 2),
     },
+    status: {
+      type: Sequelize.ENUM('active', 'fulfilled', 'deleted','hold'),
+      defaultValue: 'active',
+      validate: {
+        isIn: [['active', 'fulfilled', 'deleted','hold']], // Ensures only 'active', 'fulfilled', 'deleted','hold' values are accepted
+      },
+    },
     created_by: {
       type: Sequelize.NUMERIC,
     },

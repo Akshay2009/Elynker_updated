@@ -3,7 +3,9 @@ const Requirement = db.requirement;
 const Sequelize = db.Sequelize;
 const logErrorToFile = require('../logger');
 const serviceResponse = require('../config/serviceResponse');
+const { Model } = require('sequelize');
 const Registration = db.registration;
+const User = db.user;
 
 
 /**
@@ -240,6 +242,18 @@ module.exports.getAll = async function(req, res) {
           limit: pageSize,
           offset: offset,
           order: [['createdAt', 'ASC']],
+          include: [
+            {
+                model: Registration,
+                attributes: ['id'],
+                include: [
+                    {
+                        model: User,
+                        attributes:['id','name','email','mobile_number'],
+                    },
+                ],
+            },
+          ],
         });
         if (count > 0) {
             const categorizedData = rows.map(entry => {
@@ -288,6 +302,18 @@ module.exports.search = async function(req, res) {
             where: {
                 [fieldName]: fieldValue,
             },
+            include: [
+                {
+                    model: Registration,
+                    attributes: ['id'],
+                    include: [
+                        {
+                            model: User,
+                            attributes: ['id', 'name', 'email', 'mobile_number'],
+                        },
+                    ],
+                },
+            ],
         });
         if (records.length > 0) {
             return res.status(serviceResponse.ok).json({ message: serviceResponse.getMessage, data: records });
