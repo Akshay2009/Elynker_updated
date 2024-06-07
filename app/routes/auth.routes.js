@@ -27,4 +27,11 @@ module.exports = function(app) {
    * @param {Function} controller.signin - Controller function to handle user signin.
    */
   app.post('/api/auth/signin', controller.signin);
+
+  app.post('/api/auth/checkUser',
+    [
+      verifySignUp.checkMobileNumberExist,
+    ],
+    controller.checkRolesOfUserUsingMobileNumber,
+  )
 };

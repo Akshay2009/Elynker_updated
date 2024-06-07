@@ -58,6 +58,7 @@ db.webComponents = require('./webComponents.model.js')(sequelize,Sequelize);
 db.jobs = require('./jobs.model.js')(sequelize,Sequelize);
 db.subscription = require('./subscription.model.js')(sequelize,Sequelize);
 db.qrContacts = require('./qrContacts.model.js')(sequelize,Sequelize);
+db.jobApplication = require('./jobApplication.model.js')(sequelize,Sequelize);
 
 db.role.belongsToMany(db.user, {
   through: 'user_roles',
@@ -182,6 +183,10 @@ db.category.belongsToMany(db.jobs, {
 // associate user and registration as 1:1
 db.registration.hasOne(db.cardSharing, { onDelete: 'CASCADE' });
 db.cardSharing.belongsTo(db.registration);
+
+// associate JObs and JobApplications details as 1 to m
+db.jobs.hasMany(db.jobApplication, { onDelete: 'CASCADE' });
+db.jobApplication.belongsTo(db.jobs);
 
 
 module.exports = db;

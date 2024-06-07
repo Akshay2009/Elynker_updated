@@ -8,6 +8,7 @@ const Category = db.category;
 const Registration = db.registration;
 const Op = db.Sequelize.Op;
 const User = db.user;
+const JobApplication = db.jobApplication;
 
 /**
  * Controller function to save jobs details---
@@ -27,6 +28,7 @@ module.exports.saveJobs = async function (req, res) {
       created_by,
       updated_by,
       registrationId,
+      status,
     } = req.body;
     if (!registrationId) {
       return res
@@ -68,6 +70,7 @@ module.exports.saveJobs = async function (req, res) {
       created_by,
       updated_by,
       registrationId,
+      status,
     });
     if (record) {
       await record.addCategories(categoryRecords);
@@ -107,6 +110,7 @@ module.exports.updateJobs = async function (req, res) {
       created_by,
       updated_by,
       registrationId,
+      status,
     } = req.body;
 
     const existingJob = await Jobs.findByPk(id);
@@ -114,6 +118,11 @@ module.exports.updateJobs = async function (req, res) {
       return res
         .status(serviceResponse.notFound)
         .json({ error: serviceResponse.errorNotFound });
+    }
+    if(existingJob.status === 'fulfilled'){
+      return res
+        .status(serviceResponse.badRequest)
+        .json({ error: 'Job status is fulfilled, cannot Edit this Job' });
     }
     if (registrationId) {
       const regRecord = await Registration.findByPk(registrationId);
@@ -151,6 +160,7 @@ module.exports.updateJobs = async function (req, res) {
         created_by,
         updated_by,
         registrationId,
+        status,
       },
       {
         where: {
@@ -311,12 +321,23 @@ module.exports.search = async function (req, res) {
           model: Registration,
           attributes: ["id", "name"],
         },
+        {
+          model: JobApplication,
+          attributes: ["id"],
+        },
       ],
     });
     if (records.length > 0) {
+      const returnData = records.map((entry)=>{
+        const updatedResponse = {
+          ...entry.toJSON(),
+          job_applications: entry.job_applications.length,
+        }
+        return updatedResponse;
+      });
       return res
         .status(serviceResponse.ok)
-        .json({ message: serviceResponse.getMessage, data: records });
+        .json({ message: serviceResponse.getMessage, data: returnData });
     } else {
       return res
         .status(serviceResponse.notFound)
@@ -359,12 +380,20 @@ module.exports.getById = async function (req, res) {
             model: Registration,
             attributes: ["id", "name"],
           },
+          {
+            model: JobApplication,
+            attributes: ["id"],
+          }
         ],
       });
       if (records) {
+        const returnData = {
+            ...records.toJSON(),
+            job_applications: records.job_applications.length,
+        }
         return res
           .status(serviceResponse.ok)
-          .json({ message: serviceResponse.getMessage, data: records });
+          .json({ message: serviceResponse.getMessage, data: returnData });
       } else {
         return res
           .status(serviceResponse.notFound)
@@ -406,6 +435,7 @@ module.exports.listing = async function (req, res) {
       offset: offset,
       where: {
         title: { [Op.iLike]: `%${title}%` },
+        status: ['active'],
         ...(parsedLocations.length > 0 && { job_location: { [Op.in]: parsedLocations } }),
         ...(parsedExperiences.length > 0 && { min_experience: { [Op.in]: parsedExperiences } }),
       },
@@ -455,6 +485,7 @@ module.exports.wholeJobsListing = async function (req, res) {
       distinct: true,
       where: {
         title: { [Op.iLike]: `%${title}%` },
+        status: ['active'],
       },
       include: [
         {

@@ -14,6 +14,7 @@ const CARD_IMAGE_PATH = path.join(process.env.CARD_IMAGE_PATH);
 const REVIEW_IMAGE_PATH = path.join(process.env.REVIEW_IMAGE_PATH);
 const ADMIN_TOOL_PATH = path.join(__dirname, "..", process.env.ADMIN_TOOL_PATH);
 const WIDGET_IMAGE_PATH = path.join(process.env.WIDGET_IMAGE_PATH);
+const JOB_APPLICATION_PATH = path.join(process.env.JOB_APPLICATION_PATH);
 
 // //////////////################FREE LANCER RESUME################////////////////////////
 const freelancerResume = multer.diskStorage({
@@ -692,5 +693,67 @@ module.exports.uploadWidgetImage = multer({
   limits: {
     fileSize: 3 * 1024 * 1024, // 3MB
     files: 1,
+  },
+});
+
+//######### JOB APPLICATION #################################################//
+const jobApplication = multer.diskStorage({
+  destination: function(req, file, cb) {
+    const destinationPath = path.join(
+        __dirname,
+        '..',
+        JOB_APPLICATION_PATH,
+    );
+    // Check if the destination directory exists
+    fs.access(destinationPath, fs.constants.F_OK, (err) => {
+      if (err) {
+        // If directory doesn't exist, create it
+        fs.mkdir(destinationPath, { recursive: true }, (err) => {
+          if (err) {
+            console.error('Error creating directory:', err);
+            cb(err, null);
+          } else {
+            cb(null, destinationPath);
+          }
+        });
+      } else {
+        cb(null, destinationPath);
+      }
+    });
+  },
+  filename: function(req, file, cb) {
+    const uniqueFilename = `${file.fieldname}-${Date.now()}${Math.random().toString().slice(15)}${path.extname(file.originalname)}`;
+    cb(null, uniqueFilename);
+  },
+});
+
+
+const fileFilterJobApplication = function(req, file, cb) {
+  try {
+    const allowedFileTypes = /pdf|docx|doc|word/;
+    const mimetype = allowedFileTypes.test(file.mimetype);
+    const extname = allowedFileTypes.test(
+        path.extname(file.originalname).toLowerCase(),
+    );
+
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+
+    const error = new Error('Only PDF,DOC,DOCX And WORD files are allowed!');
+    error.status = 400; // Set the status code for the error
+
+    cb(error);
+  } catch (err) {
+    console.log('error in fileFilter function', err.message);
+  }
+};
+
+
+module.exports.uploadJobApplication = multer({
+  storage: jobApplication,
+  fileFilter: fileFilterJobApplication,
+  limits: {
+    fileSize: 1024 * 1024 * 2, // 2MB
   },
 });
