@@ -153,13 +153,15 @@ module.exports.update = async (req, res, next) => {
     const id = req.params.id;
     const existingRecord = await adminTools.findByPk(id);
     const {
-      tools_title,
-      tools_icon_image,
-      tools_cover_image,
+      title,
+      icon_image,
+      cover_image,
+      description,
       is_active,
       service_type,
       benefits,
       partners,
+      redirect_to,
       created_by,
       updated_by,
     } = req.body;
@@ -170,15 +172,15 @@ module.exports.update = async (req, res, next) => {
     }
     const [row, record] = await adminTools.update(
       {
-        tools_title,
-        tools_description,
-        tools_icon_image,
-        tools_cover_image,
+        title,
+        icon_image,
+        cover_image,
+        description,
         is_active,
         service_type,
-        redirect_to,
         benefits,
         partners,
+        redirect_to,
         created_by,
         updated_by,
       },

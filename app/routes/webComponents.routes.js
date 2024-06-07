@@ -61,4 +61,16 @@ module.exports = function (app) {
     // [authJwt.verifyToken],
     controller.search
   );
+
+    /**
+   * Endpoint to get WebComponent details by ID--
+   * @param {String} '/api/WebComponent/:id' - API endpoint path.
+   * @param {Function[]} [authJwt.verifyToken],
+   * @param {Function} controller.deleteWebComponent, - Controller function to get WebComponent details by ID--**/
+
+    app.get(
+      "/api/webcomponents/:id",
+      [authJwt.verifyToken],
+      controller.GetWebComponentById
+    );
 };

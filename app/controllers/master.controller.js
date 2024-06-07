@@ -96,7 +96,6 @@ module.exports.updateCityMasterById = async function (req, res) {
     if (updatedMaster) {
       return res.status(serviceResponse.ok).json({
         message: serviceResponse.updatedMessage,
-        message: serviceResponse.updatedMessage,
         data: updatedMaster.toJSON(),
       });
     } else {

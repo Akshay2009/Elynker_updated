@@ -195,3 +195,45 @@ module.exports.search = async function (req, res) {
       .json({ error: serviceResponse.internalServerErrorMessage });
   }
 };
+
+
+
+/**
+ * End point to get Web Components details by Id--
+ *
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @return {Promise<void>} - Promise representing the completion of the retrieval operation.
+ */
+
+module.exports.GetWebComponentById = async function (req, res) {
+  try {
+    const id = req.params.id;
+    const webComponentsRecords = await WebComponents.findOne({
+      where: { id: id },
+    });
+
+    if (webComponentsRecords ) {
+      return res.status(serviceResponse.ok).json({
+        message: serviceResponse.getMessage,
+        data: webComponentsRecords,
+      });
+    }else{
+        return res.status(serviceResponse.badRequest).json({ error: serviceResponse.errorNotFound });
+    }
+  } catch (err) {
+    logErrorToFile.logErrorToFile(
+      err,
+      "webComponents.controller",
+      "GetWebComponentById"
+    );
+    if (err instanceof Sequelize.Error) {
+      return res
+        .status(serviceResponse.badRequest)
+        .json({ error: err.message });
+    }
+    return res
+      .status(serviceResponse.internalServerError)
+      .json({ error: serviceResponse.internalServerErrorMessage });
+  }
+};

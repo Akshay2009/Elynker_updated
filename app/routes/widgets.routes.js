@@ -32,8 +32,11 @@ module.exports = function (app) {
    * @param {Function[]} [authJwt.verifyToken],
    * @param {Function} Widgets.saveSingleWidgets, - Controller function to save single widgets details--**/
 
-  app.post("/api/widgets/single", [authJwt.verifyToken], Widgets.saveSingleWidgets);
-
+  app.post(
+    "/api/widgets/single",
+    [authJwt.verifyToken],
+    Widgets.saveSingleWidgets
+  );
 
   /**
    * Endpoint to update single widgets details--
@@ -41,7 +44,11 @@ module.exports = function (app) {
    * @param {Function[]} [authJwt.verifyToken],
    * @param {Function} Widgets.updateSingleWidgets, - Controller function to update widgets details--**/
 
-  app.put("/api/widgets/:id", [authJwt.verifyToken], Widgets.updateSingleWidgets);
+  app.put(
+    "/api/widgets/:id",
+    [authJwt.verifyToken],
+    Widgets.updateSingleWidgets
+  );
 
   /**
    * Endpoint to delete single widgets details--
@@ -49,7 +56,25 @@ module.exports = function (app) {
    * @param {Function[]} [authJwt.verifyToken],
    * @param {Function} Widgets.deleteSingleWidgets, - Controller function to delete widgets details--**/
 
-  app.delete("/api/widgets/:id", [authJwt.verifyToken], Widgets.deleteSingleWidgets);
+  app.delete(
+    "/api/widgets/:id",
+    [authJwt.verifyToken],
+    Widgets.deleteSingleWidgets
+  );
 
-  app.get('/api/widgets/mobile', Widgets.getWidgetsForMobile);
+  /**
+   * Endpoint to get widgets mobile details--
+   * @param {String} '/api/widgets/single/:id' - API endpoint path.
+   * @param {Function[]} [authJwt.verifyToken],
+   * @param {Function} Widgets.updateSingleWidgets, - Controller function to get widgets mobile details--**/
+
+  app.get("/api/widgets/mobile", Widgets.getWidgetsForMobile);
+
+  /**
+   * Endpoint to get widgets details by Id--
+   * @param {String} '/api/widgets/:id' - API endpoint path.
+   * @param {Function[]} [authJwt.verifyToken],
+   * @param {Function} Widgets.updateSingleWidgets, - Controller function to update widgets details--**/
+
+  app.get("/api/widgets/:id", [authJwt.verifyToken], Widgets.getWidgetsById);
 };

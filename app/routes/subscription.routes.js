@@ -41,4 +41,14 @@ module.exports = function (app) {
    * @param {Function} controller.search, - Controller function to get subscription details by search--**/
 
   app.get("/api/subscription/search/:fieldName/:fieldValue", [authJwt.verifyToken], controller.search);
+
+
+  /**
+   * Endpoint to get subscription details by ID--
+   * @param {String} '/api/subscription/:id' - API endpoint path.
+   * @param {Function[]} [authJwt.verifyToken],
+   * @param {Function} controller.getById, - Controller function to get subscription details by id--**/
+
+  app.get("/api/subscription/:id", [authJwt.verifyToken], controller.getById);
+
 };
