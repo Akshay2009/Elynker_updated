@@ -41,6 +41,16 @@ module.exports = (sequelize, Sequelize) => {
     user_comment: {
       type: Sequelize.STRING(500),
     },
+    type: {
+      type: Sequelize.ENUM('generic', 'service', 'tools'),
+      defaultValue: 'generic',
+      validate: {
+        isIn: [['generic', 'service', 'tools']], // Ensures only 'generic', 'service', 'tools' values are accepted
+      },
+    },
+    type_id: {
+      type: Sequelize.INTEGER,
+    },
     created_by: {
       type: Sequelize.NUMERIC,
     },

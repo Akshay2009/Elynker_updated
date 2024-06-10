@@ -6,6 +6,7 @@ const serviceResponse = require('../config/serviceResponse');
 const { Model } = require('sequelize');
 const Registration = db.registration;
 const User = db.user;
+const Op = db.Sequelize.Op;
 
 
 /**
@@ -301,6 +302,7 @@ module.exports.search = async function(req, res) {
         const records = await Requirement.findAll({
             where: {
                 [fieldName]: fieldValue,
+                status: { [Op.ne]: 'deleted' }  // Exclude records with status "deleted"
             },
             include: [
                 {

@@ -14,7 +14,7 @@ const Registration = db.registration;
  */
 module.exports.saveEnquiry = async function(req, res) {
     try {
-        const { email, name, phone_number, comments, status, created_by, updated_by, registrationId, user_comment } = req.body;
+        const { email, name, phone_number, comments, status, created_by, updated_by, registrationId, user_comment, type, type_id } = req.body;
         if(registrationId){
             const registrationRecod = await Registration.findByPk(registrationId);
             if(!registrationRecod){
@@ -31,6 +31,8 @@ module.exports.saveEnquiry = async function(req, res) {
             updated_by,
             registrationId,
             user_comment,
+            type,
+            type_id,
         });
         if(record) {
             return res.status(serviceResponse.saveSuccess).json({ message: serviceResponse.createdMessage, data: record });
@@ -56,7 +58,7 @@ module.exports.saveEnquiry = async function(req, res) {
 module.exports.updateEnquiry = async function(req, res) {
     try{
         const id = req.params.id;
-        const { email, name, phone_number, comments, status, created_by, updated_by, registrationId, user_comment } = req.body;
+        const { email, name, phone_number, comments, status, created_by, updated_by, registrationId, user_comment, type, type_id } = req.body;
         
         if(registrationId){
             const registrationRecod = await Registration.findByPk(registrationId);
@@ -74,6 +76,8 @@ module.exports.updateEnquiry = async function(req, res) {
             updated_by,
             registrationId,
             user_comment,
+            type,
+            type_id,
         }, {
             where: {
                 id: id,
