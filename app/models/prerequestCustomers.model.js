@@ -26,6 +26,9 @@ module.exports = (sequelize, Sequelize) => {
         },
       },
     },
+    type: {
+      type: Sequelize.STRING(20),
+    },
     created_by: {
       type: Sequelize.NUMERIC,
     },

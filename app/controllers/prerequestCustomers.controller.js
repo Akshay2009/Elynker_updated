@@ -17,14 +17,15 @@ require('dotenv').config();
 
 module.exports.savePrerequestCustomers = async function (req, res) {
   try {
-    const { name, email, mobile_number, created_by, updated_by } = req.body;
-    if(!name || !email || !mobile_number){
+    const { name, email, mobile_number, type, created_by, updated_by } = req.body;
+    if(!name || !email || !mobile_number || !type){
       return res.status(serviceResponse.badRequest).json({ error:'All fields are Required'});
     }
     const record = await PrerequestCustomers.create({
       name,
       email,
       mobile_number,
+      type,
       created_by,
       updated_by,
     });
