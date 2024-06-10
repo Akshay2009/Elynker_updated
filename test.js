@@ -1,9 +1,10 @@
 // app.js
-const sendMail = require('./app/config/mailer');
+const {sendMail} = require('./app/config/mailer');
+require('dotenv').config();
 
 const mailOptions = {
-    from: '"Your Name" <anoopgml@gmail.com>', // sender address
-    to: 'anoop@esoftech.com',                 // list of receivers
+    from: process.env.MAIL_FROM, // sender address
+    to: 'akshay.saxena@esoftech.com',                 // list of receivers
     subject: 'Hello ✔',                       // Subject line
     text: 'Hello world?',                     // plain text body
     html: '<b>Hello world?</b>'               // html body

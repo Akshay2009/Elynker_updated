@@ -32,4 +32,4 @@ function sendMail(mailOptions) {
     });
 }
 
-module.exports = sendMail;
+module.exports = {transporter,sendMail};

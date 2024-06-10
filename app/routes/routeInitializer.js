@@ -32,6 +32,7 @@ const jobsRoutes = require('./jobs.routes');
 const subscription = require('./subscription.routes');
 const qrContactsRoutes = require('./qrContacts.routes');
 const jobApplicationRoutes = require('./jobApplication.routes');
+const prerequestCustomers = require('./prerequestCustomers.routes');
 
 module.exports = function initializeRoutes(app) {
   authRoutes(app);
@@ -67,4 +68,5 @@ module.exports = function initializeRoutes(app) {
   subscription(app);
   qrContactsRoutes(app);
   jobApplicationRoutes(app);
+  prerequestCustomers(app);
 };
