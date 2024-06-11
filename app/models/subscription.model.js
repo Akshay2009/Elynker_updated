@@ -33,11 +33,23 @@ module.exports = (sequelize, Sequelize) => {
     discount: {
       type: Sequelize.DECIMAL,
     },
+    is_active: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: true,
+    },
     created_by: {
       type: Sequelize.NUMERIC,
     },
     updated_by: {
       type: Sequelize.NUMERIC,
+    },
+    subscriptionDetailId: {
+      type: Sequelize.INTEGER,
+      allowNull: false, // Ensure this is not nullable
+      references: {
+        model: "subscription_details", // Name of the referenced model
+        key: "subscriptionId", // Name of the referenced column
+      },
     },
   });
 
