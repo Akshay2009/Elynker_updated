@@ -4,14 +4,17 @@ const serviceResponse = require("../config/serviceResponse");
 const logErrorToFile = require("../logger");
 const { where } = require("sequelize");
 const PrerequestCustomers = db.prerequestCustomers;
-require('dotenv').config();
+require("dotenv").config();
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
-const SibApiV3Sdk = require('@getbrevo/brevo');
+const SibApiV3Sdk = require("@getbrevo/brevo");
 let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-let apiKey = apiInstance.authentications['apiKey'];
+let apiKey = apiInstance.authentications["apiKey"];
 apiKey.apiKey = BREVO_API_KEY;
-let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail(); 
-
+let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+const {
+  htmlContentBusiness,
+  htmlContentFreelancer,
+} = require("../config/mailTemplateBusiness");
 
 /**
  * Post function to save PrerequestCustomers details to the database.
@@ -23,9 +26,12 @@ let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
 
 module.exports.savePrerequestCustomers = async function (req, res) {
   try {
-    const { name, email, mobile_number, type, created_by, updated_by } = req.body;
-    if(!name || !email || !mobile_number || !type){
-      return res.status(serviceResponse.badRequest).json({ error:'All fields are Required'});
+    const { name, email, mobile_number, type, created_by, updated_by } =
+      req.body;
+    if (!name || !email || !mobile_number || !type) {
+      return res
+        .status(serviceResponse.badRequest)
+        .json({ error: "All fields are Required" });
     }
     const record = await PrerequestCustomers.create({
       name,
@@ -36,20 +42,34 @@ module.exports.savePrerequestCustomers = async function (req, res) {
       updated_by,
     });
     if (record) {
-
+      // Prepare the email content
       sendSmtpEmail.subject = "{{params.subject}}";
-sendSmtpEmail.htmlContent = `<html><body>Dear ${name},<br /> {{params.parameter}} <br /> <br /> Regards,<br /> <a href='#'>Elynker</a> </body></html>`;
-sendSmtpEmail.sender = {"name":"Elynker","email":process.env.MAIL_FROM};
-sendSmtpEmail.to = [{"email":email,"name":name}];
-// sendSmtpEmail.cc = [{"email":"example2@example2.com","name":"Janice Doe"}];
-// sendSmtpEmail.bcc = [{"name":"John Doe","email":"example@example.com"}];
-// sendSmtpEmail.replyTo = {"email":"noreply@elynker.com","name":"Elynker"};
-sendSmtpEmail.headers = {"Some-Custom-Name":"unique-id-1234"};
-sendSmtpEmail.params = {"parameter":"Your Registration has been Successfully Completed, at Elynker","subject":"Registration Successful"};
 
-apiInstance.sendTransacEmail(sendSmtpEmail).then(function(data) {
-  // console.log('API called successfully. Returned data: ' + JSON.stringify(data));
-});
+      if (type.toString().toLowerCase() === "freelancer" || type.toString().toLowerCase() === "service") {
+        sendSmtpEmail.htmlContent = `Dear ${name}, ${htmlContentFreelancer}`;
+      } else {
+        sendSmtpEmail.htmlContent = `Dear ${name}, ${htmlContentBusiness}`;
+      }
+      sendSmtpEmail.sender = { name: "Elynker", email: process.env.MAIL_FROM };
+      sendSmtpEmail.to = [{ email: email, name: name }];
+      // sendSmtpEmail.cc = [{"email":"example2@example2.com","name":"Janice Doe"}];
+      // sendSmtpEmail.bcc = [{"name":"John Doe","email":"example@example.com"}];
+      //sendSmtpEmail.replyTo = { email: "noreply@elynker.com", name: "Elynker" };
+      const uid = Math.floor(10000000 + Math.random() * 90000000);
+
+      sendSmtpEmail.headers = { "Some-Custom-Name": "unique-id-"+uid };
+      sendSmtpEmail.params = {
+        parameter:
+          "Your Registration has been Successfully Completed, at Elynker",
+        subject:
+          "Subject: Confirmation of Your Pre-Launch Registration with Elynker",
+      };
+
+      apiInstance.sendTransacEmail(sendSmtpEmail).then(function (data) {
+        console.log(
+          "API called successfully. Returned data: " + JSON.stringify(data)
+        );
+      });
 
       return res
         .status(serviceResponse.saveSuccess)
@@ -75,7 +95,6 @@ apiInstance.sendTransacEmail(sendSmtpEmail).then(function(data) {
       .json({ error: serviceResponse.internalServerErrorMessage });
   }
 };
-
 
 /**
  * Post function to get All PrerequestCustomers details from the database.
@@ -113,7 +132,11 @@ module.exports.getAll = async (req, res, next) => {
         .json({ error: serviceResponse.errorNotFound });
     }
   } catch (err) {
-    logErrorToFile.logErrorToFile(err, "prerequestCustomers.controller", "getAll");
+    logErrorToFile.logErrorToFile(
+      err,
+      "prerequestCustomers.controller",
+      "getAll"
+    );
     if (err instanceof db.Sequelize.Error) {
       return res
         .status(serviceResponse.badRequest)
@@ -156,7 +179,11 @@ module.exports.search = async function (req, res) {
         .json({ error: serviceResponse.errorNotFound });
     }
   } catch (err) {
-    logErrorToFile.logErrorToFile(err, "prerequestCustomers.controller", "search");
+    logErrorToFile.logErrorToFile(
+      err,
+      "prerequestCustomers.controller",
+      "search"
+    );
     if (err instanceof Sequelize.Error) {
       return res
         .status(serviceResponse.badRequest)
@@ -194,7 +221,11 @@ module.exports.getById = async function (req, res) {
         .json({ error: serviceResponse.errorNotFound });
     }
   } catch (err) {
-    logErrorToFile.logErrorToFile(err, "prerequestCustomers.controller", "getById");
+    logErrorToFile.logErrorToFile(
+      err,
+      "prerequestCustomers.controller",
+      "getById"
+    );
     if (err instanceof Sequelize.Error) {
       return res
         .status(serviceResponse.badRequest)
