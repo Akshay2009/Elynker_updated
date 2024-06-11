@@ -44,12 +44,7 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.NUMERIC,
     },
     subscriptionDetailId: {
-      type: Sequelize.INTEGER,
-      allowNull: false, // Ensure this is not nullable
-      references: {
-        model: "subscription_details", // Name of the referenced model
-        key: "subscriptionId", // Name of the referenced column
-      },
+      type: Sequelize.INTEGER
     },
   });
 

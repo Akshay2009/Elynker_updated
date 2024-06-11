@@ -190,8 +190,8 @@ db.cardSharing.belongsTo(db.registration);
 db.jobs.hasMany(db.jobApplication, { onDelete: 'CASCADE' });
 db.jobApplication.belongsTo(db.jobs);
 
- db.subscriptionDetails.hasMany(db.subscription, { onDelete: 'CASCADE' });
- db.subscription.belongsTo(db.subscriptionDetails);
+ //db.subscriptionDetails.hasMany(db.subscription, { onDelete: 'CASCADE' });
+ //db.subscription.belongsTo(db.subscriptionDetails);
 
 
 // db.subscription.hasMany(db.subscription, { onDelete: 'CASCADE' });

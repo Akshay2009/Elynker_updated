@@ -62,6 +62,7 @@ module.exports.save = async function (req, res) {
         is_active,
         created_by,
         updated_by,
+        subscriptionDetailId: subscriptionDetailsRecord.id
       });
     
     if (record) {
