@@ -4,8 +4,14 @@ const serviceResponse = require("../config/serviceResponse");
 const logErrorToFile = require("../logger");
 const { where } = require("sequelize");
 const PrerequestCustomers = db.prerequestCustomers;
-const mailer = require('../config/mailer');
 require('dotenv').config();
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const SibApiV3Sdk = require('@getbrevo/brevo');
+let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+let apiKey = apiInstance.authentications['apiKey'];
+apiKey.apiKey = BREVO_API_KEY;
+let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail(); 
+
 
 /**
  * Post function to save PrerequestCustomers details to the database.
@@ -30,12 +36,21 @@ module.exports.savePrerequestCustomers = async function (req, res) {
       updated_by,
     });
     if (record) {
-      await mailer.transporter.sendMail({
-        from: process.env.MAIL_FROM,
-        to: email,
-        subject: 'Registration Successful',
-        html: 'Your Registration has been Successfully Completed, at Elynker',
-      })
+
+      sendSmtpEmail.subject = "{{params.subject}}";
+sendSmtpEmail.htmlContent = `<html><body>Dear ${name},<br /> {{params.parameter}} <br /> <br /> Regards,<br /> <a href='#'>Elynker</a> </body></html>`;
+sendSmtpEmail.sender = {"name":"Elynker","email":process.env.MAIL_FROM};
+sendSmtpEmail.to = [{"email":email,"name":name}];
+// sendSmtpEmail.cc = [{"email":"example2@example2.com","name":"Janice Doe"}];
+// sendSmtpEmail.bcc = [{"name":"John Doe","email":"example@example.com"}];
+// sendSmtpEmail.replyTo = {"email":"noreply@elynker.com","name":"Elynker"};
+sendSmtpEmail.headers = {"Some-Custom-Name":"unique-id-1234"};
+sendSmtpEmail.params = {"parameter":"Your Registration has been Successfully Completed, at Elynker","subject":"Registration Successful"};
+
+apiInstance.sendTransacEmail(sendSmtpEmail).then(function(data) {
+  // console.log('API called successfully. Returned data: ' + JSON.stringify(data));
+});
+
       return res
         .status(serviceResponse.saveSuccess)
         .json({ message: serviceResponse.createdMessage, data: record });
@@ -60,6 +75,7 @@ module.exports.savePrerequestCustomers = async function (req, res) {
       .json({ error: serviceResponse.internalServerErrorMessage });
   }
 };
+
 
 /**
  * Post function to get All PrerequestCustomers details from the database.
