@@ -8,7 +8,7 @@ module.exports = function (app) {
    * @param {Function[]} [authJwt.verifyToken],
    * @param {Function} controller.save, - Controller function to save subscription details--**/
 
-  app.post("/api/subscription",  controller.save);
+  app.post("/api/subscription", [authJwt.verifyToken], controller.save);
 
   /**
    * Endpoint to update subscription details--
@@ -16,7 +16,7 @@ module.exports = function (app) {
    * @param {Function[]} [authJwt.verifyToken],
    * @param {Function} controller.update, - Controller function to update subscription details--**/
 
-  app.put("/api/subscription/:id", [authJwt.verifyToken], controller.update);
+  app.put("/api/subscription/:subscriptionDetailId",  controller.update);
 
   /**
    * Endpoint to delete subscription details--

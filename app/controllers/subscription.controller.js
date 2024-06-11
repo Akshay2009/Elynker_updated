@@ -44,8 +44,8 @@ module.exports.save = async function (req, res) {
     const titlesArray = adminTools.map((tool) => tool.dataValues.title);
     const titlesString = titlesArray.join(",");
 
-     // Create SubscriptionDetails record
-     const subscriptionDetailsRecord = await SubscriptionDetails.create({
+    // Create SubscriptionDetails record
+    const subscriptionDetailsRecord = await SubscriptionDetails.create({
       name,
       description,
     });
@@ -64,17 +64,17 @@ module.exports.save = async function (req, res) {
         updated_by,
         subscriptionDetailId: subscriptionDetailsRecord.id
       });
-    
-    if (record) {
-      return res.status(serviceResponse.saveSuccess).json({
-        message: serviceResponse.createdMessage,
-        data: {
-          subscription: record,
-          subscriptionDetails: subscriptionDetailsRecord,
-        },
-      });
+
+      if (record) {
+        return res.status(serviceResponse.saveSuccess).json({
+          message: serviceResponse.createdMessage,
+          data: {
+            subscription: record,
+            subscriptionDetails: subscriptionDetailsRecord,
+          },
+        });
+      }
     }
-  }
   } catch (err) {
     logErrorToFile.logErrorToFile(err, "subscription.controller", "save");
     if (err instanceof Sequelize.Error) {
@@ -98,7 +98,7 @@ module.exports.save = async function (req, res) {
 
 module.exports.update = async function (req, res) {
   try {
-    const { id } = req.params;
+    const { subscriptionDetailId } = req.params;
     const {
       name,
       description,
@@ -109,7 +109,7 @@ module.exports.update = async function (req, res) {
       discount,
       is_active,
       created_by,
-      updated_by,
+      updated_by 
     } = req.body;
     let updateObject = {
       name,
@@ -144,16 +144,35 @@ module.exports.update = async function (req, res) {
         updateObject.services = titlesString;
       }
     }
-    const [row, record] = await Subscription.update(updateObject, {
+
+    await SubscriptionDetails.update({
+      name,
+      description,
+    }, {
       where: {
-        id: id,
-      },
-      returning: true,
+        id: subscriptionDetailId,
+      }
     });
+
+    let row, record;
+    if (req.body.id) {
+      const subscription = await Subscription.findOne({ where: { id: req.body.id } });
+      if (subscription) {
+        [row, record] = await Subscription.update(updateObject, {
+          where: { id: req.body.id },
+          returning: true,
+        });
+      } else {
+         row = await Subscription.create(updateObject);
+      }
+    }else{
+      row = await Subscription.create(updateObject);
+    }
+
     if (row) {
       return res.status(serviceResponse.ok).json({
         message: serviceResponse.updatedMessage,
-        data: record[0],
+        data: record,
       });
     } else {
       return res
