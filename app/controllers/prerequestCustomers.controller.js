@@ -62,7 +62,7 @@ module.exports.savePrerequestCustomers = async function (req, res) {
         parameter:
           "Your Registration has been Successfully Completed, at Elynker",
         subject:
-          "Subject: Confirmation of Your Pre-Launch Registration with Elynker",
+          "Confirmation of Your Pre-Launch Registration with Elynker",
       };
 
       apiInstance.sendTransacEmail(sendSmtpEmail).then(function (data) {
