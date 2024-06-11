@@ -4,6 +4,7 @@ const logErrorToFile = require("../logger");
 const serviceResponse = require("../config/serviceResponse");
 const Subscription = db.subscription;
 const AdminTool = db.adminTools;
+const SubscriptionDetails = db.subscriptionDetails;
 /**
  * End point to save subscription details--
  *
@@ -22,6 +23,7 @@ module.exports.save = async function (req, res) {
       services,
       tax,
       discount,
+      is_active,
       created_by,
       updated_by,
     } = req.body;
@@ -41,23 +43,37 @@ module.exports.save = async function (req, res) {
     });
     const titlesArray = adminTools.map((tool) => tool.dataValues.title);
     const titlesString = titlesArray.join(",");
-    const record = await Subscription.create({
+
+     // Create SubscriptionDetails record
+     const subscriptionDetailsRecord = await SubscriptionDetails.create({
       name,
       description,
-      duration,
-      price,
-      services: titlesString,
-      tax,
-      discount,
-      created_by,
-      updated_by,
     });
+    if (subscriptionDetailsRecord) {
 
+      const record = await Subscription.create({
+        name,
+        description,
+        duration,
+        price,
+        services: titlesString,
+        tax,
+        discount,
+        is_active,
+        created_by,
+        updated_by,
+      });
+    
     if (record) {
-      return res
-        .status(serviceResponse.saveSuccess)
-        .json({ message: serviceResponse.createdMessage, data: record });
+      return res.status(serviceResponse.saveSuccess).json({
+        message: serviceResponse.createdMessage,
+        data: {
+          subscription: record,
+          subscriptionDetails: subscriptionDetailsRecord,
+        },
+      });
     }
+  }
   } catch (err) {
     logErrorToFile.logErrorToFile(err, "subscription.controller", "save");
     if (err instanceof Sequelize.Error) {
@@ -90,6 +106,7 @@ module.exports.update = async function (req, res) {
       services,
       tax,
       discount,
+      is_active,
       created_by,
       updated_by,
     } = req.body;
@@ -100,6 +117,7 @@ module.exports.update = async function (req, res) {
       price,
       tax,
       discount,
+      is_active,
       created_by,
       updated_by,
     };
@@ -282,7 +300,6 @@ module.exports.search = async function (req, res) {
   }
 };
 
-
 /**
  * End point to get subscription details by Id--
  *
@@ -298,20 +315,18 @@ module.exports.getById = async function (req, res) {
       where: { id: id },
     });
 
-    if (subscriptionRecord ) {
+    if (subscriptionRecord) {
       return res.status(serviceResponse.ok).json({
         message: serviceResponse.getMessage,
         data: subscriptionRecord,
       });
-    }else{
-        return res.status(serviceResponse.badRequest).json({ error: serviceResponse.errorNotFound });
+    } else {
+      return res
+        .status(serviceResponse.badRequest)
+        .json({ error: serviceResponse.errorNotFound });
     }
   } catch (err) {
-    logErrorToFile.logErrorToFile(
-      err,
-      "subscription.controller",
-      "getById"
-    );
+    logErrorToFile.logErrorToFile(err, "subscription.controller", "getById");
     if (err instanceof Sequelize.Error) {
       return res
         .status(serviceResponse.badRequest)
