@@ -57,4 +57,12 @@ module.exports = function(app) {
         [authJwt.verifyToken],
         enquiryController.getEnquiryByRegistrationId,
     );
+    /**
+    * Get  Enquiry Record By RegistrationId last 24 hours
+    */
+    app.get('/api/enquiry-check/:registrationId',
+        [authJwt.verifyToken],
+        enquiryController.getEnquirylast24hours,
+    );
+
 };

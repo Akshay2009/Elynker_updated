@@ -448,11 +448,11 @@ module.exports.listing = async function (req, res) {
         },
         {
           model: Registration,
-          attributes: ['id', 'city', 'state','whatsapp_number'],
+          attributes: ['id', 'city', 'state','whatsapp_number','registration_type','image_path','cover_image','name','company_name'],
           include: [
             {
               model: User,
-              attributes: ['id','country_code','mobile_number'],
+              attributes: ['id','country_code','mobile_number','name'],
             },
           ],
         },
@@ -495,11 +495,11 @@ module.exports.wholeJobsListing = async function (req, res) {
         },
         {
           model: Registration,
-          attributes: ['id', 'city', 'state','whatsapp_number'],
+          attributes: ['id', 'city', 'state','whatsapp_number','registration_type','image_path','cover_image','name','company_name'],
           include: [
             {
               model: User,
-              attributes: ['id','country_code','mobile_number'],
+              attributes: ['id','country_code','mobile_number','name'],
             },
           ],
         },

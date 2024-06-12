@@ -3,7 +3,9 @@ const Enquiry = db.enquiry;
 const Sequelize = db.Sequelize;
 const logErrorToFile = require('../logger');
 const serviceResponse = require('../config/serviceResponse');
+const { where } = require('sequelize');
 const Registration = db.registration;
+const Op = db.Sequelize.Op;
 
 /**
  * Save Enquiry details to the database.
@@ -253,6 +255,32 @@ module.exports.getEnquiryByRegistrationId = async function(req, res) {
         }
     } catch (err) {
         logErrorToFile.logErrorToFile(err, 'enquiry.controller', 'getEnquiryByRegistrationId');
+        if (err instanceof Sequelize.Error) {
+            return res.status(serviceResponse.badRequest).json({ error: err.message });
+        }
+        return res.status(serviceResponse.internalServerError).json({ error: serviceResponse.internalServerErrorMessage });
+    }
+};
+
+
+module.exports.getEnquirylast24hours = async function(req, res) {
+    try {
+        const registrationId = req.params.registrationId;
+        const currentTime = new Date();
+        const past24Hours = new Date(currentTime - 24 * 60 * 60 * 1000);
+        const record = await Enquiry.findAll({
+            where: {
+                registrationId: registrationId,
+                updatedAt: {
+                    [Op.gte]: past24Hours,
+                },
+            },
+            order: [['updatedAt', 'DESC']],
+        });
+        return res.status(serviceResponse.ok).json({ message: serviceResponse.getMessage, data: record });
+        
+    } catch (err) {
+        logErrorToFile.logErrorToFile(err, 'enquiry.controller', 'getEnquirylast24hours');
         if (err instanceof Sequelize.Error) {
             return res.status(serviceResponse.badRequest).json({ error: err.message });
         }
