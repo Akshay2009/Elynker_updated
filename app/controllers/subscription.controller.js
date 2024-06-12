@@ -204,9 +204,9 @@ module.exports.update = async function (req, res) {
 module.exports.delete = async function (req, res) {
   try {
     const { id } = req.params;
-    const Records = await Subscription.findByPk(id);
+    const Records = await SubscriptionDetails.findByPk(id);
     if (Records) {
-      const delrecord = await Subscription.destroy({ where: { id: id } });
+      const delrecord = await SubscriptionDetails.destroy({ where: { id: id } });
       if (delrecord) {
         return res
           .status(serviceResponse.ok)

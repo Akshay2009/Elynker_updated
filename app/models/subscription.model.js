@@ -42,10 +42,7 @@ module.exports = (sequelize, Sequelize) => {
     },
     updated_by: {
       type: Sequelize.NUMERIC,
-    },
-    subscriptionDetailId: {
-      type: Sequelize.INTEGER
-    },
+    }
   });
 
   return Subscription;
