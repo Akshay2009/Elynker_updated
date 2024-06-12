@@ -166,13 +166,14 @@ module.exports.update = async function (req, res) {
          row = await Subscription.create(updateObject);
       }
     }else{
+      updateObject.subscriptionDetailId = subscriptionDetailId;
       row = await Subscription.create(updateObject);
     }
 
     if (row) {
       return res.status(serviceResponse.ok).json({
         message: serviceResponse.updatedMessage,
-        data: record,
+        data: record?record:row,
       });
     } else {
       return res
@@ -248,7 +249,7 @@ module.exports.getAll = async (req, res, next) => {
       offset = (page - 1) * pageSize;
     }
 
-    const { count, rows } = await Subscription.findAndCountAll({
+    const { count, rows } = await SubscriptionDetails.findAndCountAll({
       limit: pageSize,
       offset: offset,
       order: [["id", "ASC"]],
@@ -293,7 +294,7 @@ module.exports.search = async function (req, res) {
         .status(serviceResponse.badRequest)
         .json({ error: serviceResponse.fieldNotExistMessage });
     }
-    const records = await Subscription.findAll({
+    const records = await SubscriptionDetails.findAll({
       where: {
         [fieldName]: fieldValue,
       },
@@ -331,14 +332,22 @@ module.exports.search = async function (req, res) {
 module.exports.getById = async function (req, res) {
   try {
     const id = req.params.id;
-    const subscriptionRecord = await Subscription.findOne({
+    const subscriptionRecord = await SubscriptionDetails.findOne({
       where: { id: id },
     });
 
     if (subscriptionRecord) {
+
+      const subscriptions = await Subscription.findAll({
+        where: { subscriptionDetailId: id },
+        returning: true,
+      });
+     
+      var details = [{subsDetails:subscriptionRecord,subs:subscriptions}]
+
       return res.status(serviceResponse.ok).json({
         message: serviceResponse.getMessage,
-        data: subscriptionRecord,
+        data: details,
       });
     } else {
       return res
