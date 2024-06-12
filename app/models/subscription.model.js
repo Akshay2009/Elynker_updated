@@ -1,23 +1,23 @@
 module.exports = (sequelize, Sequelize) => {
   const Subscription = sequelize.define("subscription", {
-    name: {
-      type: Sequelize.STRING(200),
-      validate: {
-        len: {
-          args: [0, 200],
-          msg: "Length must be less than or equal to 200 characters",
-        },
-      },
-    },
-    description: {
-      type: Sequelize.STRING(255),
-      validate: {
-        len: {
-          args: [0, 255],
-          msg: "Length must be less than or equal to 255 characters",
-        },
-      },
-    },
+    // name: {
+    //   type: Sequelize.STRING(200),
+    //   validate: {
+    //     len: {
+    //       args: [0, 200],
+    //       msg: "Length must be less than or equal to 200 characters",
+    //     },
+    //   },
+    // },
+    // description: {
+    //   type: Sequelize.STRING(255),
+    //   validate: {
+    //     len: {
+    //       args: [0, 255],
+    //       msg: "Length must be less than or equal to 255 characters",
+    //     },
+    //   },
+    // },
     duration: {
       type: Sequelize.INTEGER,
     },

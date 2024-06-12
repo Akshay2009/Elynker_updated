@@ -27,7 +27,17 @@ module.exports.save = async function (req, res) {
       created_by,
       updated_by,
     } = req.body;
-
+    // Validate name and description
+    if (!name || name.trim().length === 0) {
+      return res
+        .status(serviceResponse.badRequest)
+        .json({ error: "Name is required" });
+    }
+    if (!description || description.trim().length === 0) {
+      return res
+        .status(serviceResponse.badRequest)
+        .json({ error: "Description is required" });
+    }
     const servicesArray = services.split(",");
 
     if (servicesArray.length === 0) {
@@ -50,10 +60,9 @@ module.exports.save = async function (req, res) {
       description,
     });
     if (subscriptionDetailsRecord) {
-
       const record = await Subscription.create({
-        name,
-        description,
+        // name,
+        // description,
         duration,
         price,
         services: titlesString,
@@ -62,7 +71,7 @@ module.exports.save = async function (req, res) {
         is_active,
         created_by,
         updated_by,
-        subscriptionDetailId: subscriptionDetailsRecord.id
+        subscriptionDetailId: subscriptionDetailsRecord.id,
       });
 
       if (record) {
@@ -109,7 +118,7 @@ module.exports.update = async function (req, res) {
       discount,
       is_active,
       created_by,
-      updated_by 
+      updated_by,
     } = req.body;
     let updateObject = {
       name,
@@ -145,27 +154,32 @@ module.exports.update = async function (req, res) {
       }
     }
 
-    await SubscriptionDetails.update({
-      name,
-      description,
-    }, {
-      where: {
-        id: subscriptionDetailId,
+    await SubscriptionDetails.update(
+      {
+        name,
+        description,
+      },
+      {
+        where: {
+          id: subscriptionDetailId,
+        },
       }
-    });
+    );
 
     let row, record;
     if (req.body.id) {
-      const subscription = await Subscription.findOne({ where: { id: req.body.id } });
+      const subscription = await Subscription.findOne({
+        where: { id: req.body.id },
+      });
       if (subscription) {
         [row, record] = await Subscription.update(updateObject, {
           where: { id: req.body.id },
           returning: true,
         });
       } else {
-         row = await Subscription.create(updateObject);
+        row = await Subscription.create(updateObject);
       }
-    }else{
+    } else {
       updateObject.subscriptionDetailId = subscriptionDetailId;
       row = await Subscription.create(updateObject);
     }
@@ -173,7 +187,7 @@ module.exports.update = async function (req, res) {
     if (row) {
       return res.status(serviceResponse.ok).json({
         message: serviceResponse.updatedMessage,
-        data: record?record:row,
+        data: record ? record : row,
       });
     } else {
       return res
@@ -206,7 +220,9 @@ module.exports.delete = async function (req, res) {
     const { id } = req.params;
     const Records = await SubscriptionDetails.findByPk(id);
     if (Records) {
-      const delrecord = await SubscriptionDetails.destroy({ where: { id: id } });
+      const delrecord = await SubscriptionDetails.destroy({
+        where: { id: id },
+      });
       if (delrecord) {
         return res
           .status(serviceResponse.ok)
@@ -337,13 +353,12 @@ module.exports.getById = async function (req, res) {
     });
 
     if (subscriptionRecord) {
-
       const subscriptions = await Subscription.findAll({
         where: { subscriptionDetailId: id },
         returning: true,
       });
-     
-      var details = [{subsDetails:subscriptionRecord,subs:subscriptions}]
+
+      var details = [{ subsDetails: subscriptionRecord, subs: subscriptions }];
 
       return res.status(serviceResponse.ok).json({
         message: serviceResponse.getMessage,
