@@ -305,7 +305,7 @@ module.exports.getAll = async (req, res, next) => {
 module.exports.search = async function (req, res) {
   try {
     const { fieldName, fieldValue } = req.params;
-    if (!Subscription.rawAttributes[fieldName]) {
+    if (!SubscriptionDetails.rawAttributes[fieldName]) {
       return res
         .status(serviceResponse.badRequest)
         .json({ error: serviceResponse.fieldNotExistMessage });
@@ -371,6 +371,38 @@ module.exports.getById = async function (req, res) {
     }
   } catch (err) {
     logErrorToFile.logErrorToFile(err, "subscription.controller", "getById");
+    if (err instanceof Sequelize.Error) {
+      return res
+        .status(serviceResponse.badRequest)
+        .json({ error: err.message });
+    }
+    return res
+      .status(serviceResponse.internalServerError)
+      .json({ error: serviceResponse.internalServerErrorMessage });
+  }
+};
+
+
+module.exports.deleteChild = async function (req, res) {
+  try {
+    const { id } = req.params;
+    const Records = await Subscription.findByPk(id);
+    if (Records) {
+      const delrecord = await Subscription.destroy({
+        where: { id: id },
+      });
+      if (delrecord) {
+        return res
+          .status(serviceResponse.ok)
+          .json({ message: serviceResponse.deletedMessage, data: Records });
+      }
+    } else {
+      return res
+        .status(serviceResponse.notFound)
+        .json({ message: serviceResponse.errorNotFound });
+    }
+  } catch (err) {
+    logErrorToFile.logErrorToFile(err, "subscription.controller", "deleteChild");
     if (err instanceof Sequelize.Error) {
       return res
         .status(serviceResponse.badRequest)

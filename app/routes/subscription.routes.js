@@ -51,4 +51,12 @@ module.exports = function (app) {
 
   app.get("/api/subscription/:id", [authJwt.verifyToken], controller.getById);
 
+  /**
+   * Endpoint to delete subscription (child)--
+   * @param {String} '/api/subscription/:id' - API endpoint path.
+   * @param {Function[]} [authJwt.verifyToken],
+   * @param {Function} controller.delete, - Controller function to delete subscription details--**/
+
+  app.delete("/api/subscription-child/:id", [authJwt.verifyToken], controller.deleteChild);
+
 };
