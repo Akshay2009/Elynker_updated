@@ -37,6 +37,9 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.BOOLEAN,
       defaultValue: true,
     },
+    total_amount: {
+      type: Sequelize.DECIMAL,
+    },
     created_by: {
       type: Sequelize.NUMERIC,
     },

@@ -24,6 +24,7 @@ module.exports.save = async function (req, res) {
       tax,
       discount,
       is_active,
+      total_amount,
       created_by,
       updated_by,
     } = req.body;
@@ -69,6 +70,7 @@ module.exports.save = async function (req, res) {
         tax,
         discount,
         is_active,
+        total_amount,
         created_by,
         updated_by,
         subscriptionDetailId: subscriptionDetailsRecord.id,
@@ -117,6 +119,7 @@ module.exports.update = async function (req, res) {
       tax,
       discount,
       is_active,
+      total_amount,
       created_by,
       updated_by,
     } = req.body;
@@ -128,6 +131,7 @@ module.exports.update = async function (req, res) {
       tax,
       discount,
       is_active,
+      total_amount,
       created_by,
       updated_by,
     };
@@ -403,6 +407,54 @@ module.exports.deleteChild = async function (req, res) {
     }
   } catch (err) {
     logErrorToFile.logErrorToFile(err, "subscription.controller", "deleteChild");
+    if (err instanceof Sequelize.Error) {
+      return res
+        .status(serviceResponse.badRequest)
+        .json({ error: err.message });
+    }
+    return res
+      .status(serviceResponse.internalServerError)
+      .json({ error: serviceResponse.internalServerErrorMessage });
+  }
+};
+
+
+module.exports.updateParent = async function (req, res) {
+  try {
+    const { subscriptionDetailId } = req.params;
+    const {
+      name,
+      description,
+      is_active,
+    } = req.body;
+
+    const [row,record] = await SubscriptionDetails.update(
+      {
+        is_active,
+        name,
+        description,
+      },
+      {
+        where: {
+          id: subscriptionDetailId,
+        },
+        returning : true,
+      }
+    );
+
+
+    if (row) {
+      return res.status(serviceResponse.ok).json({
+        message: serviceResponse.updatedMessage,
+        data: record[0],
+      });
+    } else {
+      return res
+        .status(serviceResponse.notFound)
+        .json({ error: serviceResponse.errorNotFound });
+    }
+  } catch (err) {
+    logErrorToFile.logErrorToFile(err, "subscription.controller", "updateParent");
     if (err instanceof Sequelize.Error) {
       return res
         .status(serviceResponse.badRequest)

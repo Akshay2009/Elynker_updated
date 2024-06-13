@@ -59,4 +59,6 @@ module.exports = function (app) {
 
   app.delete("/api/subscription-child/:id", [authJwt.verifyToken], controller.deleteChild);
 
+  app.put("/api/subscription-parent/:subscriptionDetailId",[authJwt.verifyToken],  controller.updateParent);
+
 };
